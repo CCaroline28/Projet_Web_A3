@@ -1,0 +1,45 @@
+import pandas as pd
+import mysql.connector
+
+# Paramètres MySQL
+config = {
+    'user': 'mlenec28',
+    'password': 'PncZ9n6YUYINXnG_',
+    'host': 'localhost',
+    'database': 'mlenec28', # Vérifiez si c'est la bonne base pour ces données
+    'charset': 'utf8mb4'
+}
+
+# Chargement CSV
+# J'ai utilisé 'utf-8' car le fichier semble être dans ce format standard
+df = pd.read_csv('export_IA.csv', encoding='utf-8')
+
+try:
+    cnx = mysql.connector.connect(**config)
+    cursor = cnx.cursor()
+
+    # Parcours du DataFrame
+    for idx, row in df.iterrows():
+        # Exemple d'insertion basé sur les colonnes de votre fichier export_IA.csv
+        # Remplacez 'nom_de_votre_table' et les colonnes par les vôtres
+        cursor.execute("""
+            INSERT INTO station 
+            (nom_operateur, nom_enseigne, nom_station, nbre_pdc, puissance_nominale, code_commune) 
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (
+            str(row['nom_operateur']),
+            str(row['nom_enseigne']),
+            str(row['nom_station']),
+            int(row['nbre_pdc']) if pd.notnull(row['nbre_pdc']) else 0,
+            float(row['puissance_nominale']) if pd.notnull(row['puissance_nominale']) else 0.0,
+            str(row['consolidated_commune'])
+        ))
+    
+    cnx.commit()
+    print("Import terminé avec succès")
+
+except mysql.connector.Error as err:
+    print(f"Erreur : {err}")
+finally:
+    if 'cursor' in locals(): cursor.close()
+    if 'cnx' in locals(): cnx.close()
