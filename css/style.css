@@ -106,7 +106,7 @@ body {
 
 .hero__illustration {
   flex-shrink: 0;
-  width: 260px;
+  width: 500px;
   height: 180px;
   display: flex;
   align-items: center;
