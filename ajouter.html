@@ -24,6 +24,69 @@
      <a href="statistique.html" class="navbar__link">Statistique</a>
     </nav>
   </header>
+  <body>
+    <body>
+    <main class="form-container">
+        <h1>Ajout</h1> <br> <br>
+        <p>Remplissez les informations ci-dessous pour ajouter une nouvelle station de charge.</p>
+        
+        <form>
+            <div class="form-grid">
+                <div class="col">
+                    <label>Longitude *</label>
+                    <input type="number" placeholder="ex: 1.2345">
+                    <label>Latitude *</label>
+                    <input type="number" placeholder="ex: 45.6789">
+                    <label>Nombre de points de charge</label>
+                    <input type="number" placeholder="0">
+                    <label>Condition d'accès</label>
+                    <select><option>Public</option><option>Privé</option></select>
+                </div>
+
+                <div class="col">
+                    <label>Implantation station</label>
+                    <select>
+                        <option value="">-- Choisissez une option --</option>
+                        <option value="PRC">Parking privé réservé à la clientèle </option>
+                        <option value="SDRR">Station dédiée à la recharge rapide</option>
+                        <option value="PP">Parking public</option>
+                        <option value="Voirie">Voirie</option>
+                        <option value="PPUP">Parking privé à usage public</option>
+                    </select>
+                    <label>Nombre de points de charge</label>
+                    <input type="number">
+                    <label>Réservation</label>
+                      <select>
+                        <option value="">-- Choisissez une option --</option>
+                        <option value="TRUE">TRUE</option>
+                        <option value="FALSE">FALSE</option>
+                      </select>
+                    <label>Date mise en service</label>
+                    <input type="date">
+                </div>
+
+                <div class="col">
+                    <label>Type paiement</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox"> CB</label>
+                        <label><input type="checkbox"> Acte</label>
+                        <label><input type="checkbox"> autre </label>
+                    </div>
+                    <label>Type de prise</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox"> Type 2</label>
+                        <label><input type="checkbox"> Combo CCS</label>
+                        <label><input type="checkbox"> ef </label>
+                        <label><input type="checkbox"> chademo </label>
+                        <label><input type="checkbox"> autre </label>
+                    </div>
+                    <label>Code postal</label>
+                    <input type="text" placeholder="75000">
+                </div>
+            </div>
+            <button type="submit" class="save-btn">Enregistrer</button>
+        </form>
+    </main>
  <!-- FOOTER -->
   <footer class="footer">
     <span class="footer__left">2026 ISEN – Projet Big Data / IA / Web</span>
