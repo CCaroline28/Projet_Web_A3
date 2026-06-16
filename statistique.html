@@ -25,18 +25,33 @@
     </nav>
   </header>
   <main class="dashboard-container">
-    <div class="filter-section">
-        <b><label for="dept">Sélection du département:  </label></b>
-        <select id="dept">
-            <option>Tous les départements</option>
-        </select>
-    </div>
+    <div class="dashboard-header">
+        <h1>Statistiques</h1>
+        <div class="filter-section">
+            <label for="dept">Filtrer par département :</label>
+            <select id="dept">
+                <option>Tous les départements</option>
+            </select>
+        </div>
+    </div>  
 
     <div class="stats-grid">
-        <div class="stat-card"><h3>Répartition par implantation</h3></div>
-        <div class="stat-card"><h3>Répartition par type de prise</h3></div>
-        <div class="stat-card"><h3>Nombre de points de charge (par station)</h3></div>
-        <div class="stat-card"><h3>Répartition par puissance</h3></div>
+        <div class="stat-card">
+            <h3>Répartition par implantation</h3>
+            <div class="chart-placeholder">Graphique ici</div>
+        </div>
+        <div class="stat-card">
+            <h3>Répartition par type de prise</h3>
+            <div class="chart-placeholder">Graphique ici</div>
+        </div>
+        <div class="stat-card">
+            <h3>Points de charge par station</h3>
+            <div class="chart-placeholder">Graphique ici</div>
+        </div>
+        <div class="stat-card">
+            <h3>Répartition par puissance</h3>
+            <div class="chart-placeholder">Graphique ici</div>
+        </div>
     </div>
 </main>
   <!-- FOOTER -->

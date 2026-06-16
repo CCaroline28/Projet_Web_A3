@@ -26,38 +26,44 @@
   </header>
   <main class="main">
   <section class="points-charge">
-    <h2>Points de charge</h2> <br>
+    <h2>Points de charge</h2>
     
-    <div class="filters">
+    <div class="filter-bar">
       <div class="filter-group">
-        <b><label>Département: </label></b>
-        <input type="text" placeholder="complétion automatique...">
+        <label>Département</label>
+        <input type="text" placeholder="Rechercher un département...">
       </div>
-      <div class="filter-group">
-        <center><b><label>Type de prise: </label></b><br></center>
-        <input type="checkbox"> 2 <input type="checkbox"> combo CCS <input type="checkbox"> ef <input type="checkbox"> chademo <input type="checkbox"> autre 
+      
+      <div class="filter-group-checkbox">
+        <label>Type de prise</label>
+        <div class="checkbox-list">
+          <label><input type="checkbox"> Type 2</label>
+          <label><input type="checkbox"> Combo CCS</label>
+          <label><input type="checkbox"> E/F</label>
+          <label><input type="checkbox"> ChaDeMo</label>
+        </div>
       </div>
-      <button class="btn-primary" >Valider</button>
-      </div>
+      
+      <button class="btn-primary">Filtrer</button>
+    </div>
 
     <div class="table-container">
-      <p>Tableau + bouton action pour chaque ligne + pagination + suppression + modification</p>
+       <p>Le tableau de données apparaîtra ici</p>
     </div>
 
     <div class="actions">
-      <button class="btn-yellow" onclick="window.location.href='ajouter.html'">Ajouter une prise</button>
-      <button class="btn-yellow" onclick="window.location.href='predire_clusters.html'">Prédire les clusters</button>
-      <button class="btn-yellow" onclick="window.location.href='predire_puissance_nominale.html'">Prédire la puissance nominale</button>
-      <button class="btn-yellow" onclick="window.location.href='predire_implantation.html'">Prédire l'implantation</button>
+      <button class="btn-yellow" onclick="window.location.href='ajouter.html'">+ Ajouter</button>
+      <button class="btn-yellow" onclick="window.location.href='predire_clusters.html'">Clusters</button>
+      <button class="btn-yellow" onclick="window.location.href='predire_puissance_nominale.html'">Puissance</button>
+      <button class="btn-yellow" onclick="window.location.href='predire_implantation.html'">Implantation</button>
     </div>
   </section>
 
   <section class="map-section">
     <h2>Carte des stations</h2>
     <div class="map-placeholder">
-      <img src="map-icon.png" alt="Carte" width="100">
+      <p>Intégration de la carte interactive (Leaflet/Mapbox)</p>
     </div>
-    <button class="btn-yellow">Prédire les clusters</button>
   </section>
 </main>
   <!-- FOOTER -->

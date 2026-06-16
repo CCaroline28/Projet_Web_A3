@@ -491,3 +491,165 @@ input { padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
 /* Carte et Cluster */
 .map-card { min-height: 300px; display: flex; align-items: center; justify-content: center; color: #666; border: 1px solid #eee; }
 .cluster-result { background: white; padding: 40px; text-align: center; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+/* Amélioration de la typographie et du fond */
+body {
+  line-height: 1.6;
+  color: #2d3436;
+}
+
+/* Effet "Glass" pour les cartes principales */
+.glass-card {
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  border: 1px solid rgba(0,0,0,0.05);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+
+/* Hero Section plus élégante */
+.hero {
+  background: white;
+  padding: 40px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.hero__title {
+  color: #2d3436;
+  font-size: 2.5rem; /* Plus grand pour l'impact */
+  line-height: 1.1;
+  margin-bottom: 20px;
+}
+
+/* Amélioration des icones stat-card */
+.stat-card__icon {
+  background: #38b000 !important; /* Vert très clair */
+  color: #38b000; /* Vert vif */
+}
+/* Forcez la couleur des SVGs si besoin */
+.stat-card__icon svg { fill: #38b000; }
+
+/* Espacement plus généreux */
+.main {
+  gap: 40px;
+  padding-bottom: 80px;
+}
+/* Barre de filtre flexible */
+.filter-bar {
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.filter-group { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.checkbox-list { display: flex; gap: 15px; flex-wrap: wrap; }
+.checkbox-list label { font-weight: normal; font-size: 0.85rem; cursor: pointer; }
+
+/* Boutons d'action unifiés */
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-start;
+  margin-top: 20px;
+}
+
+.btn-yellow {
+  background: #ffc107;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px; /* Plus moderne que le 20px complet */
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.btn-yellow:hover {
+  background: #e0a800;
+  transform: translateY(-2px);
+}
+
+/* Carte */
+.map-placeholder {
+  height: 400px; /* Plus grand pour la visibilité */
+  background: #eef2f3;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  border: 2px dashed #ccc;
+}
+/* En-tête du dashboard */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.dashboard-header h1 { font-size: 1.5rem; color: #1a1a1a; }
+
+/* Grille de stats */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+}
+
+/* Carte de statistique */
+.stat-card {
+    background: white;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.stat-card h3 {
+    font-size: 1rem;
+    color: #444;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 10px;
+}
+
+/* Espace pour les graphiques */
+.chart-placeholder {
+    height: 200px;
+    background: #fcfcfc;
+    border: 2px dashed #e0e0e0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
+    font-size: 0.9rem;
+}
+
+/* Responsive : passage en 1 colonne sur mobile */
+@media (max-width: 768px) {
+    .stats-grid { grid-template-columns: 1fr; }
+    .dashboard-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+}
+/* Assurez-vous que le conteneur parent est en colonne */
+.dashboard-header {
+    display: flex;
+    flex-direction: column; /* Force le passage à la ligne */
+    align-items: flex-start; /* Aligne tout à gauche */
+    gap: 15px; /* Espace entre le titre et le filtre */
+    margin-bottom: 30px;
+}
+
+/* Optionnel : Ajuster la taille du menu déroulant */
+.filter-section select {
+    width: 100%;
+    max-width: 300px; /* Limite la largeur pour que ça reste élégant */
+}
