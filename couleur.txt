@@ -1,0 +1,6 @@
+#F7CE65 -> jaune 
+#346BCE -> bleu
+#347A44 -> vert
+#F8F9FA -> blanc
+#180119 -> noir
+#D5E1B9 -> vert pale
