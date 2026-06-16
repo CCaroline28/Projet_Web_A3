@@ -57,12 +57,15 @@ body {
   font-size: 0.9rem;
   font-weight: 500;
   opacity: 0.85;
-  transition: opacity 0.2s;
+  transition: all 0.3s ease;
+  padding-bottom: 4px;
+  border-bottom: 2px solid transparent; /* Bordure invisible par défaut */
 }
 
-.navbar__link:hover,
 .navbar__link--active {
   opacity: 1;
+  border-bottom: 2px solid #fff; /* La ligne blanche s'affiche ici */
+  font-weight: 700;
 }
 
 /* ===== MAIN ===== */
