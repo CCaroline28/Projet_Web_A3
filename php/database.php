@@ -17,82 +17,6 @@ function dbConnect() {
     return $db;
 }
 
-function createdatabase($db) {
-    try {
-        // Correction : $pdo → $db partout
-        $db->exec("SET FOREIGN_KEY_CHECKS = 0");
-        $db->exec("DROP TABLE IF EXISTS paye_avec");
-        $db->exec("DROP TABLE IF EXISTS de_type");
-        $db->exec("DROP TABLE IF EXISTS prise");
-        $db->exec("DROP TABLE IF EXISTS station");
-        $db->exec("DROP TABLE IF EXISTS type_de_prise");
-        $db->exec("DROP TABLE IF EXISTS type_paiement");
-        $db->exec("DROP TABLE IF EXISTS Localisation");
-        $db->exec("SET FOREIGN_KEY_CHECKS = 1");
-
-        $db->exec("
-            CREATE TABLE IF NOT EXISTS type_paiement (
-                type_de_paiement VARCHAR(50) NOT NULL,
-                CONSTRAINT type_paiement_PK PRIMARY KEY (type_de_paiement)
-            ) ENGINE=InnoDB;
-
-            CREATE TABLE IF NOT EXISTS Localisation (
-                consolidated_code_postal INT NOT NULL,
-                consolidated_commune CHAR(50) NOT NULL,
-                CONSTRAINT Localisation_PK PRIMARY KEY (consolidated_code_postal)
-            ) ENGINE=InnoDB;
-
-            CREATE TABLE IF NOT EXISTS station (
-                id_station INT NOT NULL AUTO_INCREMENT,
-                implantation_station CHAR(50) NOT NULL,
-                nom_station CHAR(50) NOT NULL,
-                consolidated_latitude FLOAT NOT NULL,
-                consolidated_longitude FLOAT NOT NULL,
-                CONSTRAINT station_PK PRIMARY KEY (id_station)
-            ) ENGINE=InnoDB;
-
-            CREATE TABLE IF NOT EXISTS type_de_prise (
-                type_de_prise VARCHAR(50) NOT NULL,
-                CONSTRAINT type_de_prise_PK PRIMARY KEY (type_de_prise)
-            ) ENGINE=InnoDB;
-
-            CREATE TABLE IF NOT EXISTS prise (
-                id_prise INT NOT NULL AUTO_INCREMENT,
-                nbre_pdc INT NOT NULL,
-                puissance_nominale FLOAT NOT NULL,
-                condition_acces CHAR(50) NOT NULL,
-                reservation TINYINT(1) NOT NULL,
-                date_mise_en_service DATETIME NOT NULL,
-                id_station INT NOT NULL,
-                consolidated_code_postal INT NOT NULL,
-                CONSTRAINT prise_PK PRIMARY KEY (id_prise),
-                CONSTRAINT prise_id_station_FK FOREIGN KEY (id_station) REFERENCES station(id_station),
-                CONSTRAINT prise_consolidated_code_postal_FK FOREIGN KEY (consolidated_code_postal) REFERENCES Localisation(consolidated_code_postal)
-            ) ENGINE=InnoDB;
-
-            CREATE TABLE IF NOT EXISTS de_type (
-                type_de_prise VARCHAR(50) NOT NULL,
-                id_prise INT NOT NULL,
-                CONSTRAINT de_type_PK PRIMARY KEY (type_de_prise, id_prise),
-                CONSTRAINT de_type_type_de_prise_FK FOREIGN KEY (type_de_prise) REFERENCES type_de_prise(type_de_prise),
-                CONSTRAINT de_type_id_prise_FK FOREIGN KEY (id_prise) REFERENCES prise(id_prise)
-            ) ENGINE=InnoDB;
-
-            CREATE TABLE IF NOT EXISTS paye_avec (
-                type_de_paiement VARCHAR(50) NOT NULL,
-                id_prise INT NOT NULL,
-                CONSTRAINT paye_avec_PK PRIMARY KEY (type_de_paiement, id_prise),
-                CONSTRAINT paye_avec_type_de_paiement_FK FOREIGN KEY (type_de_paiement) REFERENCES type_paiement(type_de_paiement),
-                CONSTRAINT paye_avec_id_prise_FK FOREIGN KEY (id_prise) REFERENCES prise(id_prise)
-            ) ENGINE=InnoDB;
-        ");
-    } catch (PDOException $exception) {
-        error_log('Request error: ' . $exception->getMessage());
-        return false;
-    }
-    return true;
-}
-
 function dbCountStations($db) {
     $stmt = $db->query("SELECT COUNT(*) AS total_stations FROM station");
     return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -297,6 +221,97 @@ function dbInsertInstallation($db, $data) {
     } catch (Exception $e) {
         $db->rollBack();
         error_log($e->getMessage());
+        return false;
+    }
+}
+
+#################################################################################STATISTIQUE###########################################################################
+  #Renvoie un tableau contenant l'id de la station et le type de ses prises (séparé par une virgule)
+function dbCounttypeprise($db,$dep){
+    try {
+        $request = "SELECT id_station,    GROUP_CONCAT(DISTINCT type_de_prise ORDER BY type_de_prise SEPARATOR ', ') AS types_de_prise
+FROM (
+    SELECT  prise.id_station, prise.id_prise, de_type.type_de_prise, prise.consolidated_code_postal
+	FROM prise
+	INNER JOIN de_type ON prise.id_prise = de_type.id_prise
+    WHERE prise.consolidated_code_postal LIKE :dep
+	ORDER BY prise.id_station, prise.id_prise
+) AS sub
+GROUP BY id_station;";
+        $statement = $db->prepare($request);
+        $statement->execute();
+        $stmt->execute([":dep" => $dep . "%"]);
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        return $result;
+    } catch (PDOException $exception) {
+        error_log('Count request error: ' . $exception->getMessage());
+        return false;
+    }
+}
+
+
+#Renvoie un tableau contenant le nombre du type de station et son total dans la base
+function dbCountimplantation($db,$dep){
+    try {
+        $request = "SELECT station.implantation_station,
+       COUNT(*) AS total
+FROM station
+INNER JOIN prise ON station.id_station = prise.id_station
+WHERE prise.consolidated_code_postal LIKE :dep
+GROUP BY station.implantation_station;
+";
+        $statement = $db->prepare($request);
+        $statement->execute();
+        $stmt->execute([":dep" => $dep . "%"]);
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        return $result;
+    } catch (PDOException $exception) {
+        error_log('Count request error: ' . $exception->getMessage());
+        return false;
+    }
+}
+
+#Renvoie un tableau contenant le nb de point de charge  et son total dans la base
+# il nous faut un graphe avec en absisse les nb de points de charges et en ordonnée le total
+function dbCountimplantation($db, $dep){
+    try {
+        $request = "SELECT nb_pdc, COUNT(*) AS total_de_pdc
+FROM (
+    SELECT id_station, MAX(nbre_pdc) AS nb_pdc, COUNT(*) AS total_prise  # ça renvoie un tableau avec l'id de la statino et le nb de pdc 
+    FROM prise
+    WHERE consolidated_code_postal LIKE :dep'
+    GROUP BY id_station
+) AS sub
+GROUP BY nb_pdc
+";
+        $statement = $db->prepare($request);
+        $statement->execute();
+        $stmt->execute([":dep" => $dep . "%"]);
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        return $result;
+    } catch (PDOException $exception) {
+        error_log('Count request error: ' . $exception->getMessage());
+        return false;
+    }
+}
+
+#Renvoie un tableau contenant l'id de la station et la puissance de ses prises (séparé par une virgule)
+function dbCountpuissance($db,$dep){
+    try {
+        $request = "SELECT implantation_station, GROUP_CONCAT(DISTINCT puissance_nominale ORDER BY puissance_nominale SEPARATOR ', ') AS puissances
+FROM (
+    SELECT  puissance_nominale, id_prise, id_station, consolidated_code_postal
+	FROM prise
+) AS sub
+GROUP BY id_station
+WHERE consolidated_code_postal LIKE :dep;";
+        $statement = $db->prepare($request);
+        $statement->execute();
+        $stmt->execute([":dep" => $dep . "%"]);
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        return $result;
+    } catch (PDOException $exception) {
+        error_log('Count request error: ' . $exception->getMessage());
         return false;
     }
 }
