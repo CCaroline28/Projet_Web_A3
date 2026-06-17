@@ -4,94 +4,85 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LEF IRVE – Bornes de recharge électrique</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-     <!-- NAVBAR -->
   <header class="navbar">
     <div class="navbar__brand">
-      <div class="navbar__logo">
-        <img src="img/logo.png" alt="Logo LEF IRVE" class="navbar__logo-img" />
-      </div>
       <span class="navbar__name">LEF IRVE</span>
     </div>
     <nav class="navbar__links">
-      <a href="accueil.html" class="navbar__link">Accueil</a>
-      <a href="visualisation.html" class="navbar__link navbar__link--active">Visualisation</a>
-     <a href="statistique.html" class="navbar__link">Statistique</a>
+      <a href="index.html">Accueil</a>
+      <a href="visualisation.html">Visualisation</a>
+      <a href="statistique.html">Statistique</a>
     </nav>
   </header>
-  <body>
-    <body>
-    <main class="form-container">
-        <h1>Ajout</h1> <br> <br>
-        <p>Remplissez les informations ci-dessous pour ajouter une nouvelle station de charge.</p>
-        
-        <form>
-            <div class="form-grid">
-                <div class="col">
-                    <label>Longitude *</label>
-                    <input type="number" placeholder="ex: 1.2345">
-                    <label>Latitude *</label>
-                    <input type="number" placeholder="ex: 45.6789">
-                    <label>Nombre de points de charge</label>
-                    <input type="number" placeholder="0">
-                    <label>Condition d'accès</label>
-                    <select><option>Public</option><option>Privé</option></select>
-                </div>
 
-                <div class="col">
-                    <label>Implantation station</label>
-                    <select>
-                        <option value="">-- Choisissez une option --</option>
-                        <option value="PRC">Parking privé réservé à la clientèle </option>
-                        <option value="SDRR">Station dédiée à la recharge rapide</option>
-                        <option value="PP">Parking public</option>
-                        <option value="Voirie">Voirie</option>
-                        <option value="PPUP">Parking privé à usage public</option>
-                    </select>
-                    <label>Nombre de points de charge</label>
-                    <input type="number">
-                    <label>Réservation</label>
-                      <select>
-                        <option value="">-- Choisissez une option --</option>
-                        <option value="TRUE">TRUE</option>
-                        <option value="FALSE">FALSE</option>
-                      </select>
-                    <label>Date mise en service</label>
-                    <input type="date">
-                </div>
+  <main class="form-container">
+    <h1>Ajout d'une station</h1>
+    <p>Remplissez les informations ci-dessous :</p>
+    
+    <div id="message"></div>
+    
+    <form id="formAjouterInstallation">
+      <div class="form-grid">
+        <div class="col">
+          <label>Longitude *</label>
+          <input type="number" name="longitude" step="any" required>
+          <label>Latitude *</label>
+          <input type="number" name="latitude" step="any" required>
+          <label>Nombre de points de charge</label>
+          <input type="number" name="nb_points" placeholder="0">
+          <label>Condition d'accès</label>
+          <select name="acces">
+            <option value="Public">Public</option>
+            <option value="Prive">Privé</option>
+          </select>
+        </div>
 
-                <div class="col">
-                    <label>Type paiement</label>
-                    <div class="checkbox-group">
-                        <label><input type="checkbox"> CB</label>
-                        <label><input type="checkbox"> Acte</label>
-                        <label><input type="checkbox"> autre </label>
-                    </div>
-                    <label>Type de prise</label>
-                    <div class="checkbox-group">
-                        <label><input type="checkbox"> Type 2</label>
-                        <label><input type="checkbox"> Combo CCS</label>
-                        <label><input type="checkbox"> ef </label>
-                        <label><input type="checkbox"> chademo </label>
-                        <label><input type="checkbox"> autre </label>
-                    </div>
-                    <label>Code postal</label>
-                    <input type="text" placeholder="75000">
-                </div>
-            </div>
-            <button type="submit" class="save-btn">Enregistrer</button>
-        </form>
-    </main>
- <!-- FOOTER -->
+        <div class="col">
+          <label>Implantation station</label>
+          <select name="implantation">
+            <option value="PRC">Parking privé réservé à la clientèle</option>
+            <option value="SDRR">Station dédiée à la recharge rapide</option>
+            <option value="PP">Parking public</option>
+            <option value="Voirie">Voirie</option>
+            <option value="PPUP">Parking privé à usage public</option>
+          </select>
+          <label>Réservation</label>
+          <select name="reservation">
+            <option value="FALSE">FALSE</option>
+            <option value="TRUE">TRUE</option>
+          </select>
+          <label>Date mise en service</label>
+          <input type="date" name="date_service">
+        </div>
+
+        <div class="col">
+          <label>Type paiement</label>
+          <div class="checkbox-group">
+            <label><input type="checkbox" name="paiement" value="CB"> CB</label>
+            <label><input type="checkbox" name="paiement" value="Acte"> Acte</label>
+            <label><input type="checkbox" name="paiement" value="Autre"> Autre</label>
+          </div>
+          <label>Type de prise</label>
+          <div class="checkbox-group">
+            <label><input type="checkbox" name="prise" value="Type2"> Type 2</label>
+            <label><input type="checkbox" name="prise" value="Combo"> Combo CCS</label>
+            <label><input type="checkbox" name="prise" value="Chademo"> Chademo</label>
+          </div>
+          <label>Code postal</label>
+          <input type="text" name="code_postal">
+        </div>
+      </div>
+      <button type="submit" class="save-btn">Enregistrer</button>
+    </form>
+  </main>
+
   <footer class="footer">
-    <span class="footer__left">2026 ISEN – Projet Big Data / IA / Web</span>
-    <span class="footer__right">Trinôme 2</span>
+    <p>2026 ISEN – Projet Big Data / IA / Web | Trinôme 2</p>
   </footer>
 
+  <script src="js/ajouter.js"></script>
 </body>
 </html>

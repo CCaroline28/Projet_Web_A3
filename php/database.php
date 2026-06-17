@@ -1,246 +1,303 @@
 <?php
-  
-  require_once('constantes.php');
 
-// sert à se connecter à la base de données
-// Retourne un objet PDO en cas de succès ou false en cas d'échec
-function dbConnect(){
-  try{
-    $db = new PDO('mysql:host='.DB_SERVER.';dbname='.DB_NAME.';charset=utf8;'.
-    'port='.DB_PORT, DB_USER, DB_PASSWORD);
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-  }
-  catch (PDOException $exception){
-    error_log('Connection error: '.$exception->getMessage());
-    return false;
-  }
-  return $db;
+require_once('constantes.php');
+
+function dbConnect() {
+    try {
+        $db = new PDO(
+            'mysql:host=' . DB_SERVER . ';dbname=' . DB_NAME . ';charset=utf8;port=' . DB_PORT,
+            DB_USER,
+            DB_PASSWORD
+        );
+        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    } catch (PDOException $exception) {
+        error_log('Connection error: ' . $exception->getMessage());
+        return false;
+    }
+    return $db;
 }
 
+function createdatabase($db) {
+    try {
+        // Correction : $pdo → $db partout
+        $db->exec("SET FOREIGN_KEY_CHECKS = 0");
+        $db->exec("DROP TABLE IF EXISTS paye_avec");
+        $db->exec("DROP TABLE IF EXISTS de_type");
+        $db->exec("DROP TABLE IF EXISTS prise");
+        $db->exec("DROP TABLE IF EXISTS station");
+        $db->exec("DROP TABLE IF EXISTS type_de_prise");
+        $db->exec("DROP TABLE IF EXISTS type_paiement");
+        $db->exec("DROP TABLE IF EXISTS Localisation");
+        $db->exec("SET FOREIGN_KEY_CHECKS = 1");
 
-function createdatabase($db){
-  try
-  {
-  $request = '
-  CREATE TABLE mois_install(
-        mois Varchar (50) NOT NULL
-	,CONSTRAINT mois_install_PK PRIMARY KEY (mois)
-)ENGINE=InnoDB;
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS type_paiement (
+                type_de_paiement VARCHAR(50) NOT NULL,
+                CONSTRAINT type_paiement_PK PRIMARY KEY (type_de_paiement)
+            ) ENGINE=InnoDB;
 
+            CREATE TABLE IF NOT EXISTS Localisation (
+                consolidated_code_postal INT NOT NULL,
+                consolidated_commune CHAR(50) NOT NULL,
+                CONSTRAINT Localisation_PK PRIMARY KEY (consolidated_code_postal)
+            ) ENGINE=InnoDB;
 
-#------------------------------------------------------------
-# Table: annee_install
-#------------------------------------------------------------
+            CREATE TABLE IF NOT EXISTS station (
+                id_station INT NOT NULL AUTO_INCREMENT,
+                implantation_station CHAR(50) NOT NULL,
+                nom_station CHAR(50) NOT NULL,
+                consolidated_latitude FLOAT NOT NULL,
+                consolidated_longitude FLOAT NOT NULL,
+                CONSTRAINT station_PK PRIMARY KEY (id_station)
+            ) ENGINE=InnoDB;
 
-CREATE TABLE annee_install(
-        annee Int NOT NULL
-	,CONSTRAINT annee_install_PK PRIMARY KEY (annee)
-)ENGINE=InnoDB;
+            CREATE TABLE IF NOT EXISTS type_de_prise (
+                type_de_prise VARCHAR(50) NOT NULL,
+                CONSTRAINT type_de_prise_PK PRIMARY KEY (type_de_prise)
+            ) ENGINE=InnoDB;
 
+            CREATE TABLE IF NOT EXISTS prise (
+                id_prise INT NOT NULL AUTO_INCREMENT,
+                nbre_pdc INT NOT NULL,
+                puissance_nominale FLOAT NOT NULL,
+                condition_acces CHAR(50) NOT NULL,
+                reservation TINYINT(1) NOT NULL,
+                date_mise_en_service DATETIME NOT NULL,
+                id_station INT NOT NULL,
+                consolidated_code_postal INT NOT NULL,
+                CONSTRAINT prise_PK PRIMARY KEY (id_prise),
+                CONSTRAINT prise_id_station_FK FOREIGN KEY (id_station) REFERENCES station(id_station),
+                CONSTRAINT prise_consolidated_code_postal_FK FOREIGN KEY (consolidated_code_postal) REFERENCES Localisation(consolidated_code_postal)
+            ) ENGINE=InnoDB;
 
-#------------------------------------------------------------
-# Table: onduleur
-#------------------------------------------------------------
+            CREATE TABLE IF NOT EXISTS de_type (
+                type_de_prise VARCHAR(50) NOT NULL,
+                id_prise INT NOT NULL,
+                CONSTRAINT de_type_PK PRIMARY KEY (type_de_prise, id_prise),
+                CONSTRAINT de_type_type_de_prise_FK FOREIGN KEY (type_de_prise) REFERENCES type_de_prise(type_de_prise),
+                CONSTRAINT de_type_id_prise_FK FOREIGN KEY (id_prise) REFERENCES prise(id_prise)
+            ) ENGINE=InnoDB;
 
-CREATE TABLE onduleur(
-        id     Int  Auto_increment  NOT NULL ,
-        marque Varchar (50) NOT NULL ,
-        modele Varchar (50) NOT NULL
-	,CONSTRAINT onduleur_PK PRIMARY KEY (id)
-)ENGINE=InnoDB;
-
-
-#------------------------------------------------------------
-# Table: parametres
-#------------------------------------------------------------
-
-CREATE TABLE parametres(
-        id                  Int  Auto_increment  NOT NULL ,
-        puissance_crete     Int NOT NULL ,
-        surface             Int NOT NULL ,
-        pente               Int NOT NULL ,
-        pente_optimum       Int NOT NULL ,
-        orientation         Int NOT NULL ,
-        orientation_optimum Int NOT NULL
-	,CONSTRAINT parametres_PK PRIMARY KEY (id)
-)ENGINE=InnoDB;
-
-
-#------------------------------------------------------------
-# Table: panneau
-#------------------------------------------------------------
-
-CREATE TABLE panneau(
-        id            Int  Auto_increment  NOT NULL ,
-        marque        Varchar (50) NOT NULL ,
-        modele        Varchar (50) NOT NULL ,
-        produc_pvgis  Int NOT NULL ,
-        id_parametres Int NOT NULL
-	,CONSTRAINT panneau_PK PRIMARY KEY (id)
-
-	,CONSTRAINT panneau_parametres_FK FOREIGN KEY (id_parametres) REFERENCES parametres(id)
-)ENGINE=InnoDB;
-
-
-#------------------------------------------------------------
-# Table: installateur
-#------------------------------------------------------------
-
-CREATE TABLE installateur(
-        nom Varchar (50) NOT NULL
-	,CONSTRAINT installateur_PK PRIMARY KEY (nom)
-)ENGINE=InnoDB;
-
-
-#------------------------------------------------------------
-# Table: _pays
-#------------------------------------------------------------
-
-CREATE TABLE _pays(
-        pays Varchar (50) NOT NULL
-	,CONSTRAINT _pays_PK PRIMARY KEY (pays)
-)ENGINE=InnoDB;
-
-
-#------------------------------------------------------------
-# Table: _region
-#------------------------------------------------------------
-
-CREATE TABLE _region(
-        pays   Varchar (50) NOT NULL ,
-        code   Int NOT NULL ,
-        region Varchar (50) NOT NULL
-	,CONSTRAINT _region_PK PRIMARY KEY (pays,code)
-
-	,CONSTRAINT _region__pays_FK FOREIGN KEY (pays) REFERENCES _pays(pays)
-)ENGINE=InnoDB;
-
-
-#------------------------------------------------------------
-# Table: _departement
-#------------------------------------------------------------
-
-CREATE TABLE _departement(
-        pays         Varchar (50) NOT NULL ,
-        code__region Int NOT NULL ,
-        code         Int NOT NULL ,
-        departement  Varchar (50) NOT NULL
-	,CONSTRAINT _departement_PK PRIMARY KEY (pays,code__region,code)
-
-	,CONSTRAINT _departement__region_FK FOREIGN KEY (pays,code__region) REFERENCES _region(pays,code)
-)ENGINE=InnoDB;
-
-
-#------------------------------------------------------------
-# Table: _code_postal
-#------------------------------------------------------------
-
-CREATE TABLE _code_postal(
-        pays              Varchar (50) NOT NULL ,
-        code__region      Int NOT NULL ,
-        code__departement Int NOT NULL ,
-        code_postal       Varchar (10) NOT NULL ,
-        code_postal_suff  Varchar (10) NOT NULL ,
-        postal_town       Varchar (50) NOT NULL
-	,CONSTRAINT _code_postal_PK PRIMARY KEY (pays,code__region,code__departement,code_postal)
-
-	,CONSTRAINT _code_postal__departement_FK FOREIGN KEY (pays,code__region,code__departement) REFERENCES _departement(pays,code__region,code)
-)ENGINE=InnoDB;
-
-
-#------------------------------------------------------------
-# Table: commune
-#------------------------------------------------------------
-
-CREATE TABLE commune(
-        pays              Varchar (50) NOT NULL ,
-        code__region      Int NOT NULL ,
-        code__departement Int NOT NULL ,
-        code_postal       Varchar (10) NOT NULL ,
-        code_INSEE        Varchar (10) NOT NULL ,
-        nom               Varchar (10) NOT NULL ,
-        population        Int NOT NULL
-	,CONSTRAINT commune_PK PRIMARY KEY (pays,code__region,code__departement,code_postal,code_INSEE)
-
-	,CONSTRAINT commune__code_postal_FK FOREIGN KEY (pays,code__region,code__departement,code_postal) REFERENCES _code_postal(pays,code__region,code__departement,code_postal)
-)ENGINE=InnoDB;
-
-
-#------------------------------------------------------------
-# Table: installation
-#------------------------------------------------------------
-
-CREATE TABLE installation(
-        ID                Int  Auto_increment  NOT NULL ,
-        iddoc             Int NOT NULL ,
-        nb_panneau        Int NOT NULL ,
-        nb_onduleur       Int NOT NULL ,
-        nom               Varchar (50) NOT NULL ,
-        mois              Varchar (50) NOT NULL ,
-        pays              Varchar (50) NOT NULL ,
-        code__region      Int NOT NULL ,
-        code__departement Int NOT NULL ,
-        code_postal       Varchar (10) NOT NULL ,
-        code_INSEE        Varchar (10) NOT NULL
-	,CONSTRAINT installation_PK PRIMARY KEY (ID)
-
-	,CONSTRAINT installation_installateur_FK FOREIGN KEY (nom) REFERENCES installateur(nom)
-	,CONSTRAINT installation_mois_install0_FK FOREIGN KEY (mois) REFERENCES mois_install(mois)
-	,CONSTRAINT installation_commune1_FK FOREIGN KEY (pays,code__region,code__departement,code_postal,code_INSEE) REFERENCES commune(pays,code__region,code__departement,code_postal,code_INSEE)
-)ENGINE=InnoDB;
-
-
-#------------------------------------------------------------
-# Table: installe1
-#------------------------------------------------------------
-
-CREATE TABLE installe1(
-        id              Int NOT NULL ,
-        ID_installation Int NOT NULL
-	,CONSTRAINT installe1_PK PRIMARY KEY (id,ID_installation)
-
-	,CONSTRAINT installe1_panneau_FK FOREIGN KEY (id) REFERENCES panneau(id)
-	,CONSTRAINT installe1_installation0_FK FOREIGN KEY (ID_installation) REFERENCES installation(ID)
-)ENGINE=InnoDB;
-
-
-#------------------------------------------------------------
-# Table: installe
-#------------------------------------------------------------
-
-CREATE TABLE installe(
-        ID          Int NOT NULL ,
-        id_onduleur Int NOT NULL
-	,CONSTRAINT installe_PK PRIMARY KEY (ID,id_onduleur)
-
-	,CONSTRAINT installe_installation_FK FOREIGN KEY (ID) REFERENCES installation(ID)
-	,CONSTRAINT installe_onduleur0_FK FOREIGN KEY (id_onduleur) REFERENCES onduleur(id)
-)ENGINE=InnoDB;
-
-
-#------------------------------------------------------------
-# Table:année
-#------------------------------------------------------------
-
-CREATE TABLE de_l_annee(
-        annee Int NOT NULL ,
-        mois  Varchar (50) NOT NULL
-	,CONSTRAINT de_l_annee_PK PRIMARY KEY (annee,mois)
-
-	,CONSTRAINT de_l_annee_annee_install_FK FOREIGN KEY (annee) REFERENCES annee_install(annee)
-	,CONSTRAINT de_l_annee_mois_install0_FK FOREIGN KEY (mois) REFERENCES mois_install(mois)
-)ENGINE=InnoDB;';
-  $statement = $db->prepare($request);
-  $statement->execute();
-  $result = $statement->fetchAll(PDO::FETCH_ASSOC); 
-  }
-  catch (PDOException $exception)
-  {
-  error_log('Request error: '.$exception->getMessage());
-  return false;
-  }
-  return $result;
+            CREATE TABLE IF NOT EXISTS paye_avec (
+                type_de_paiement VARCHAR(50) NOT NULL,
+                id_prise INT NOT NULL,
+                CONSTRAINT paye_avec_PK PRIMARY KEY (type_de_paiement, id_prise),
+                CONSTRAINT paye_avec_type_de_paiement_FK FOREIGN KEY (type_de_paiement) REFERENCES type_paiement(type_de_paiement),
+                CONSTRAINT paye_avec_id_prise_FK FOREIGN KEY (id_prise) REFERENCES prise(id_prise)
+            ) ENGINE=InnoDB;
+        ");
+    } catch (PDOException $exception) {
+        error_log('Request error: ' . $exception->getMessage());
+        return false;
+    }
+    return true;
 }
 
+function dbCountStations($db) {
+    $stmt = $db->query("SELECT COUNT(*) AS total_stations FROM station");
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
 
+function dbCountPointsCharge($db) {
+    $stmt = $db->query("SELECT SUM(nbre_pdc) AS total_points_charge FROM prise");
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+function dbTopDepartement($db) {
+    $departements = [
+        '01' => 'Ain', '02' => 'Aisne', '03' => 'Allier', '04' => 'Alpes-de-Haute-Provence',
+        '05' => 'Hautes-Alpes', '06' => 'Alpes-Maritimes', '07' => 'Ardèche', '08' => 'Ardennes',
+        '09' => 'Ariège', '10' => 'Aube', '11' => 'Aude', '12' => 'Aveyron',
+        '13' => 'Bouches-du-Rhône', '14' => 'Calvados', '15' => 'Cantal', '16' => 'Charente',
+        '17' => 'Charente-Maritime', '18' => 'Cher', '19' => 'Corrèze', '21' => 'Côte-d\'Or',
+        '22' => 'Côtes-d\'Armor', '23' => 'Creuse', '24' => 'Dordogne', '25' => 'Doubs',
+        '26' => 'Drôme', '27' => 'Eure', '28' => 'Eure-et-Loir', '29' => 'Finistère',
+        '2A' => 'Corse-du-Sud', '2B' => 'Haute-Corse', '30' => 'Gard', '31' => 'Haute-Garonne',
+        '32' => 'Gers', '33' => 'Gironde', '34' => 'Hérault', '35' => 'Ille-et-Vilaine',
+        '36' => 'Indre', '37' => 'Indre-et-Loire', '38' => 'Isère', '39' => 'Jura',
+        '40' => 'Landes', '41' => 'Loir-et-Cher', '42' => 'Loire', '43' => 'Haute-Loire',
+        '44' => 'Loire-Atlantique', '45' => 'Loiret', '46' => 'Lot', '47' => 'Lot-et-Garonne',
+        '48' => 'Lozère', '49' => 'Maine-et-Loire', '50' => 'Manche', '51' => 'Marne',
+        '52' => 'Haute-Marne', '53' => 'Mayenne', '54' => 'Meurthe-et-Moselle', '55' => 'Meuse',
+        '56' => 'Morbihan', '57' => 'Moselle', '58' => 'Nièvre', '59' => 'Nord',
+        '60' => 'Oise', '61' => 'Orne', '62' => 'Pas-de-Calais', '63' => 'Puy-de-Dôme',
+        '64' => 'Pyrénées-Atlantiques', '65' => 'Hautes-Pyrénées', '66' => 'Pyrénées-Orientales',
+        '67' => 'Bas-Rhin', '68' => 'Haut-Rhin', '69' => 'Rhône', '70' => 'Haute-Saône',
+        '71' => 'Saône-et-Loire', '72' => 'Sarthe', '73' => 'Savoie', '74' => 'Haute-Savoie',
+        '75' => 'Paris', '76' => 'Seine-Maritime', '77' => 'Seine-et-Marne',
+        '78' => 'Yvelines', '79' => 'Deux-Sèvres', '80' => 'Somme', '81' => 'Tarn',
+        '82' => 'Tarn-et-Garonne', '83' => 'Var', '84' => 'Vaucluse', '85' => 'Vendée',
+        '86' => 'Vienne', '87' => 'Haute-Vienne', '88' => 'Vosges', '89' => 'Yonne',
+        '90' => 'Territoire de Belfort', '91' => 'Essonne', '92' => 'Hauts-de-Seine',
+        '93' => 'Seine-Saint-Denis', '94' => 'Val-de-Marne', '95' => 'Val-d\'Oise',
+        '971' => 'Guadeloupe', '972' => 'Martinique', '973' => 'Guyane',
+        '974' => 'La Réunion', '976' => 'Mayotte'
+    ];
+
+    $stmt = $db->query("
+        SELECT LEFT(l.consolidated_code_postal, 2) AS departement,
+               SUM(p.nbre_pdc) AS total_points_charge
+        FROM prise p
+        JOIN Localisation l ON p.consolidated_code_postal = l.consolidated_code_postal
+        GROUP BY departement
+        ORDER BY total_points_charge DESC
+        LIMIT 1
+    ");
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $code = str_pad($row['departement'], 2, '0', STR_PAD_LEFT);
+    $row['nom_departement'] = isset($departements[$code]) ? $departements[$code] : 'Département ' . $code;
+
+    return $row;
+}
+
+function dbGetPrises($db, $dep = '', $types = [], $limit = 50, $offset = 0) {
+    $where  = [];
+    $params = [];
+
+    if ($dep !== '') {
+        $where[] = "LEFT(l.consolidated_code_postal, LENGTH(:dep)) = :dep";
+        $params[':dep'] = $dep;
+    }
+
+    if (!empty($types)) {
+        $typeConditions = [];
+        foreach ($types as $i => $t) {
+            $key = ':type' . $i;
+            $typeConditions[] = "(dt.type_de_prise = $key
+                OR dt.type_de_prise LIKE :like$i
+                OR dt.type_de_prise LIKE :likestart$i
+                OR dt.type_de_prise LIKE :likeend$i)";
+            $params[$key]                = $t;
+            $params[':like' . $i]        = '%-' . $t . '-%';
+            $params[':likestart' . $i]   = $t . '-%';
+            $params[':likeend' . $i]     = '%-' . $t;
+        }
+        $where[] = '(' . implode(' OR ', $typeConditions) . ')';
+    }
+
+    $sql = "
+        SELECT
+            s.nom_station,
+            s.implantation_station,
+            l.consolidated_commune,
+            l.consolidated_code_postal,
+            p.nbre_pdc,
+            p.puissance_nominale,
+            p.condition_acces,
+            p.reservation,
+            GROUP_CONCAT(DISTINCT dt.type_de_prise SEPARATOR '-') AS type_de_prise,
+            GROUP_CONCAT(DISTINCT pa.type_de_paiement SEPARATOR '-') AS type_de_paiement
+        FROM prise p
+        JOIN station s      ON p.id_station = s.id_station
+        JOIN Localisation l ON p.consolidated_code_postal = l.consolidated_code_postal
+        LEFT JOIN de_type dt   ON p.id_prise = dt.id_prise
+        LEFT JOIN paye_avec pa ON p.id_prise = pa.id_prise
+    ";
+
+    if (!empty($where)) {
+        $sql .= " WHERE " . implode(' AND ', $where);
+    }
+
+    // Correction : GROUP BY nécessaire avec GROUP_CONCAT
+    $sql .= "
+        GROUP BY
+            p.id_prise,
+            s.nom_station,
+            s.implantation_station,
+            l.consolidated_commune,
+            l.consolidated_code_postal,
+            p.nbre_pdc,
+            p.puissance_nominale,
+            p.condition_acces,
+            p.reservation
+        LIMIT :limit OFFSET :offset
+    ";
+
+    $stmt = $db->prepare($sql);
+
+    foreach ($params as $key => $value) {
+        $stmt->bindValue($key, $value);
+    }
+
+    $stmt->bindValue(':limit',  (int)$limit,  PDO::PARAM_INT);
+    $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+
+    $stmt->execute();
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Correction : le double return en bas a été supprimé
+}
+
+function dbCountPrises($db, $dep = '', $types = []) {
+    $where  = [];
+    $params = [];
+
+    if ($dep !== '') {
+        $where[] = "LEFT(l.consolidated_code_postal, LENGTH(:dep)) = :dep";
+        $params[':dep'] = $dep;
+    }
+
+    if (!empty($types)) {
+        $typeConditions = [];
+        foreach ($types as $i => $t) {
+            $key = ':type' . $i;
+            $typeConditions[] = "(dt.type_de_prise = $key
+                OR dt.type_de_prise LIKE :like$i
+                OR dt.type_de_prise LIKE :likestart$i
+                OR dt.type_de_prise LIKE :likeend$i)";
+            $params[$key]              = $t;
+            $params[':like' . $i]      = '%-' . $t . '-%';
+            $params[':likestart' . $i] = $t . '-%';
+            $params[':likeend' . $i]   = '%-' . $t;
+        }
+        $where[] = '(' . implode(' OR ', $typeConditions) . ')';
+    }
+
+    $sql = "
+        SELECT COUNT(DISTINCT p.id_prise) AS total
+        FROM prise p
+        JOIN station s      ON p.id_station = s.id_station
+        JOIN Localisation l ON p.consolidated_code_postal = l.consolidated_code_postal
+        LEFT JOIN de_type dt ON p.id_prise = dt.id_prise
+    ";
+
+    if (!empty($where)) {
+        $sql .= " WHERE " . implode(' AND ', $where);
+    }
+
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
+
+    return (int) $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+}
+function dbInsertInstallation($db, $data) {
+    try {
+        $db->beginTransaction();
+
+        // 1. Insertion de la station
+        $stmt = $db->prepare("INSERT INTO station (nom_station, implantation_station, consolidated_latitude, consolidated_longitude) VALUES (?, ?, ?, ?)");
+        $stmt->execute(['Station', $data['implantation'], $data['latitude'], $data['longitude']]);
+        $idStation = $db->lastInsertId();
+
+        // 2. Insertion de la prise (Note: j'ai mis des valeurs par défaut pour les champs manquants dans votre formulaire)
+        $stmt = $db->prepare("INSERT INTO prise (nbre_pdc, puissance_nominale, condition_acces, reservation, date_mise_en_service, id_station, consolidated_code_postal) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([
+            $data['nb_points_charge'] ?? 0, 
+            0, // puissance_nominale par défaut
+            $data['condition_acces'] ?? 'Public', 
+            ($data['reservation'] === 'TRUE' ? 1 : 0), 
+            $data['date_mise_en_service'], 
+            $idStation, 
+            $data['code_postal']
+        ]);
+
+        $db->commit();
+        return true;
+    } catch (Exception $e) {
+        $db->rollBack();
+        error_log($e->getMessage());
+        return false;
+    }
+}
 ?>

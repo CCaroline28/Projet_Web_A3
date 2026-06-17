@@ -21,7 +21,7 @@
     </div>
     <nav class="navbar__links">
       <a href="#" class="navbar__link navbar__link--active">Accueil</a>
-      <a href="visualisation.html" class="navbar__link ">Visualisation</a>
+      <a href="visualisation.html" class="navbar__link">Visualisation</a>
       <a href="statistique.html" class="navbar__link">Statistique</a>
     </nav>
   </header>
@@ -56,7 +56,7 @@
         </div>
         <div class="stat-card__content">
           <span class="stat-card__label">Station de recharge</span>
-          <span class="stat-card__value">---</span>
+          <span class="stat-card__value" id="total-stations">---</span>
         </div>
       </div>
 
@@ -68,7 +68,7 @@
         </div>
         <div class="stat-card__content">
           <span class="stat-card__label">Points de charge</span>
-          <span class="stat-card__value">---</span>
+          <span class="stat-card__value" id="total-points-charge">---</span>
         </div>
       </div>
 
@@ -81,14 +81,13 @@
         </div>
         <div class="stat-card__content">
           <span class="stat-card__label">Département le mieux équipé</span>
-          <span class="stat-card__value">---</span>
+          <span class="stat-card__value" id="top-departement">---</span>
         </div>
       </div>
     </section>
 
     <!-- BOTTOM SECTION -->
     <section class="bottom">
-
       <div class="about-card">
         <h2 class="about-card__title">À propos</h2>
         <p class="about-card__text">
@@ -99,27 +98,26 @@
         </p>
       </div>
       <div class="tech-card">
-  <h2 class="tech-card__title">Technologies utilisées</h2>
-  <div class="tech-card__logos">
-    <div class="tech-logo">
-      <img src="https://cdn.jsdelivr.net/npm/simple-icons@v13/icons/amazondynamodb.svg" alt="BDD" width="48" height="48" />
-  <span>BDD</span>
-    </div>
-    <div class="tech-logo">
-      <img src="https://cdn.jsdelivr.net/npm/simple-icons@v13/icons/javascript.svg" alt="JavaScript" width="48" height="48" />
-      <span>JavaScript</span>
-    </div>
-    <div class="tech-logo">
-      <img src="https://cdn.jsdelivr.net/npm/simple-icons@v13/icons/html5.svg" alt="HTML" width="48" height="48" />
-      <span>HTML</span>
-    </div>
-    <div class="tech-logo">
-      <img src="https://cdn.jsdelivr.net/npm/simple-icons@v13/icons/php.svg" alt="PHP" width="48" height="48" />
-      <span>PHP</span>
-    </div>
-  </div>
-</div>
-
+        <h2 class="tech-card__title">Technologies utilisées</h2>
+        <div class="tech-card__logos">
+          <div class="tech-logo">
+            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v13/icons/amazondynamodb.svg" alt="BDD" width="48" height="48" />
+            <span>BDD</span>
+          </div>
+          <div class="tech-logo">
+            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v13/icons/javascript.svg" alt="JavaScript" width="48" height="48" />
+            <span>JavaScript</span>
+          </div>
+          <div class="tech-logo">
+            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v13/icons/html5.svg" alt="HTML" width="48" height="48" />
+            <span>HTML</span>
+          </div>
+          <div class="tech-logo">
+            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v13/icons/php.svg" alt="PHP" width="48" height="48" />
+            <span>PHP</span>
+          </div>
+        </div>
+      </div>
     </section>
   </main>
 
@@ -129,5 +127,6 @@
     <span class="footer__right">Trinôme 2</span>
   </footer>
 
+  <script src="js/stat.js"></script>
 </body>
 </html>

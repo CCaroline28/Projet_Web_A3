@@ -10,7 +10,8 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-     <!-- NAVBAR -->
+
+  <!-- NAVBAR -->
   <header class="navbar">
     <div class="navbar__brand">
       <div class="navbar__logo">
@@ -19,58 +20,99 @@
       <span class="navbar__name">LEF IRVE</span>
     </div>
     <nav class="navbar__links">
-      <a href="accueil.html" class="navbar__link">Accueil</a>
+      <a href="index.html" class="navbar__link">Accueil</a>
       <a href="visualisation.html" class="navbar__link navbar__link--active">Visualisation</a>
-     <a href="statistique.html" class="navbar__link">Statistique</a>
+      <a href="statistique.html" class="navbar__link">Statistique</a>
     </nav>
   </header>
+
   <main class="main">
-  <section class="points-charge">
-    <h2>Points de charge</h2>
-    
-    <div class="filter-bar">
-      <div class="filter-group">
-        <label>Département</label>
-        <input type="text" placeholder="Rechercher un département...">
-      </div>
-      
-      <div class="filter-group-checkbox">
-        <label>Type de prise</label>
-        <div class="checkbox-list">
-          <label><input type="checkbox"> Type 2</label>
-          <label><input type="checkbox"> Combo CCS</label>
-          <label><input type="checkbox"> E/F</label>
-          <label><input type="checkbox"> ChaDeMo</label>
+
+    <section class="points-charge">
+      <h2>Points de charge</h2>
+
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label>Département</label>
+          <input id="filtre-dep" type="text" placeholder="Rechercher un département...">
         </div>
+
+        <div class="filter-group-checkbox">
+          <label>Type de prise</label>
+          <div class="checkbox-list">
+            <label><input type="checkbox" value="2"> Type 2</label>
+            <label><input type="checkbox" value="combo_ccs"> Combo CCS</label>
+            <label><input type="checkbox" value="ef"> E/F</label>
+            <label><input type="checkbox" value="ChaDeMo"> ChaDeMo</label>
+          </div>
+        </div>
+
+        <button id="btn-filtrer" class="btn-primary">Filtrer</button>
       </div>
-      
-      <button class="btn-primary">Filtrer</button>
-    </div>
 
-    <div class="table-container">
-       <p>Le tableau de données apparaîtra ici</p>
-    </div>
+      <div class="table-headers">
+        <h2>Visualisation des installations</h2>
+        <p class="loading" id="table-message">Chargement des données...</p>
 
-    <div class="actions">
-      <button class="btn-yellow" onclick="window.location.href='ajouter.html'">+ Ajouter</button>
-      <button class="btn-yellow" onclick="window.location.href='predire_clusters.html'">Clusters</button>
-      <button class="btn-yellow" onclick="window.location.href='predire_puissance_nominale.html'">Puissance</button>
-      <button class="btn-yellow" onclick="window.location.href='predire_implantation.html'">Implantation</button>
-    </div>
-  </section>
+        <table id="tableau-prises" style="display:none;">
+          <thead>
+            <tr>
+              <th>Nom station</th>
+              <th>Commune</th>
+              <th>Code postal</th>
+              <th>Implantation</th>
+              <th>Nb points de charge</th>
+              <th>Puissance (kW)</th>
+              <th>Type de prise</th>
+              <th>Paiement</th>
+              <th>Réservation</th>
+              <th>Accès</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-prises"></tbody>
+        </table>
 
-  <section class="map-section">
-    <h2>Carte des stations</h2>
-    <div class="map-placeholder">
-      <p>Intégration de la carte interactive (Leaflet/Mapbox)</p>
-    </div>
-  </section>
-</main>
+        <div id="pagination"></div>
+
+        <div class="d-flex justify-content-between align-items-center mt-3">
+          <div>
+            <label for="itemsPerPage">Afficher</label>
+            <select id="itemsPerPage" class="form-select d-inline-block w-auto">
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50" selected>50</option>
+              <option value="100">100</option>
+            </select>
+            <span>installations par page</span>
+          </div>
+
+          <div class="actions">
+            <button class="btn-yellow" onclick="window.location.href='ajouter.html'">+ Ajouter</button>
+            <button class="btn-yellow" onclick="window.location.href='predire_clusters.html'">Clusters</button>
+            <button class="btn-yellow" onclick="window.location.href='predire_puissance_nominale.html'">Puissance</button>
+            <button class="btn-yellow" onclick="window.location.href='predire_implantation.html'">Implantation</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="map-section">
+      <h2>Carte des stations</h2>
+      <div class="map-placeholder">
+        <p>Intégration de la carte interactive (Leaflet/Mapbox)</p>
+      </div>
+    </section>
+
+  </main>
+
   <!-- FOOTER -->
   <footer class="footer">
     <span class="footer__left">2026 ISEN – Projet Big Data / IA / Web</span>
     <span class="footer__right">Trinôme 2</span>
   </footer>
+
+  <script src="js/visualisation.js"></script>
 
 </body>
 </html>
