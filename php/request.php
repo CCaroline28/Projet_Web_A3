@@ -19,6 +19,11 @@ $routes = [
     'stats/stations'          => function() use ($db) { return dbCountStations($db); },
     'stats/points-charge'     => function() use ($db) { return dbCountPointsCharge($db); },
     'stats/top-departement'   => function() use ($db) { return dbTopDepartement($db); },
+
+	'statistique/rep_implantation'  => function() use ($db) { $dep = $_GET['departement'] ?? ''; return dbCountimplantation($db, $dep); },
+    'statistique/rep_type'  => function() use ($db) { $dep = $_GET['departement'] ?? ''; return dbCounttypeprise($db, $dep); },
+    'statistique/rep_puissance'  => function() use ($db) { $dep = $_GET['departement'] ?? ''; return dbCountpuissance($db,$dep); },
+    'statistique/nb_point_charge'  => function() use ($db) { $dep = $_GET['departement'] ?? ''; return dbCountnbpoints($db, $dep); },
     
     'visu/prises' => function() use ($db) {
         $dep   = $_GET['dep'] ?? '';
