@@ -16,17 +16,37 @@ async function fetchPuissance(dep) {
   return await response.json();
 }
 
-//sert à afficher les valeurs de la puissance
-async function afficherBarplotPuissance() {
-  const data = await fetchPuissance();
+//Transforme le tableau en quelchose d'exploitable...
+function compterStationsParPuissance(data_puissance) {
+  const compteur = {};
 
-  // Exemple : data = [{ puissance: 3, nb: 12 }, { puissance: 7, nb: 5 }]
-  const labels = data.map(item => item.puissance);
+  data_puissance.forEach(item => {
+    // Séparer les puissances de chaque station (ex: "7.4, 22" → ["7.4", "22"])
+    const puissances = item.puissances.split(',').map(p => p.trim());
+
+    puissances.forEach(p => {
+      if (!compteur[p]) compteur[p] = 0;
+      compteur[p]++;
+    });
+  });
+
+  // Trier par valeur de puissance croissante
+  return Object.entries(compteur)
+    .sort((a, b) => parseFloat(a[0]) - parseFloat(b[0]))
+    .map(([puissance, nb]) => ({ puissance, nb }));
+}
+
+//sert à créer le barplot
+async function afficherBarplotPuissance(dep) {
+  // ✅ fetchPuissance est appelé ici directement
+  const data_puissance = await fetchPuissance(dep);
+  const data = compterStationsParPuissance(data_puissance);
+
+  const labels = data.map(item => `${item.puissance} kW`);
   const valeurs = data.map(item => item.nb);
 
   const ctx = document.getElementById('puissanceChart').getContext('2d');
 
-  // Si un graphique existe déjà, on le détruit avant d'en recréer un
   if (puissanceChart !== null) {
     puissanceChart.destroy();
   }
@@ -36,7 +56,7 @@ async function afficherBarplotPuissance() {
     data: {
       labels: labels,
       datasets: [{
-        label: 'Nombre de bornes par puissance',
+        label: 'Nombre de station avec cette puissance puissance',
         data: valeurs,
         backgroundColor: 'rgba(54, 162, 235, 0.6)',
         borderColor: 'rgba(54, 162, 235, 1)',
@@ -45,16 +65,22 @@ async function afficherBarplotPuissance() {
     },
     options: {
       responsive: true,
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: ctx => `${ctx.parsed.y} station(s)`
+          }
+        }
+      },
       scales: {
         y: {
-          beginAtZero: true
+          beginAtZero: true,
+          ticks: { stepSize: 1 }
         }
       }
     }
   });
 }
-
-// document.getElementById('select-dep').addEventListener('change', afficherBarplotPuissance); //sert à changer le barplot quand il y a un changement de dep
 
 
 async function fetchNbpoint() {
@@ -105,37 +131,20 @@ async function test(dep) {
   console.log(data)}
 
 //S'il y a un changement dans le menu déroulant, on recharge tout les graphes
-select.addEventListener('change', () => {
-    const codeDepartement = select.value;
-    console.log(codeDepartement); // 75
-    test(codeDepartement)
-
-    
+select.addEventListener('change', async () => {
+  const codeDepartement = select.value;
+  console.log(codeDepartement);
+  await afficherBarplotPuissance(codeDepartement);
 });
 
+// document.addEventListener('DOMContentLoaded', async () => {
+//   const valeurInitiale = select.value;
+//   if (valeurInitiale) {
+//     await afficherBarplotPuissance(valeurInitiale); // Affichage au chargement ... on a rien a afficher de base...
+//   }
+// });
 
 
 // document.addEventListener('DOMContentLoaded', async () => {
   
 
-
-
-//   try {
-
-//     const stations = await fetchNombreStations();
-//     document.getElementById('total-stations').textContent = stations.total_stations;
-
-//     const pointsCharge = await fetchNombrePointsCharge();
-//     document.getElementById('total-points-charge').textContent = pointsCharge.total_points_charge;
-
-//     const top = await fetchTopDepartement();
-//     document.getElementById('top-departement').textContent =
-//       'Dép. ' + top.departement + ' (' + top.total_points_charge + ' pts)';
-
-//   } catch (err) {
-//     console.error('Erreur lors du chargement des données :', err);
-//     document.getElementById('total-stations').textContent      = 'Erreur';
-//     document.getElementById('total-points-charge').textContent = 'Erreur';
-//     document.getElementById('top-departement').textContent     = 'Erreur';
-//   }
-// });
