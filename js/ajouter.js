@@ -6,36 +6,26 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
 
         const formData = new FormData(form);
-        const data = {};
+        const data = Object.fromEntries(formData.entries()); //récupère les informations du formulaire en association clé/valeurs
 
-        // Récupération intelligente des données
-        formData.forEach((value, key) => {
-            if (key === 'paiement' || key === 'prise') {
-                if (!data[key]) data[key] = [];
-                data[key].push(value);
-            } else {
-                data[key] = value;
-            }
-        });
-
-        // Conversion des tableaux pour l'envoi
-        data.paiement = data.paiement ? data.paiement.join(', ') : '';
-        data.prise = data.prise ? data.prise.join(', ') : '';
+        // Récupérer les checkbox séparément (pour qu'on récupère bien plusieurs valeurs si plusieurs cases sont cochés) 
+        data.paiement = formData.getAll('paiement');
+        data.prise = formData.getAll('prise');
 
         try {
-            const response = await fetch('php/request.php?route=installation', {
+            const response = await fetch('php/request.php/ajouter', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams(data)
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
             });
 
             const result = await response.json();
 
             if (result.success) {
-                messageDiv.innerHTML = "<p style='color:green'>Succès : Station enregistrée.</p>";
+                messageDiv.innerHTML = "<p style='color:green'>Succès : Station et prise ajoutées.</p>";
                 form.reset();
             } else {
-                throw new Error(result.error || "Erreur inconnue");
+                throw new Error(result.error || "Erreur lors de l'enregistrement");
             }
         } catch (err) {
             messageDiv.innerHTML = "<p style='color:red'>Erreur : " + err.message + "</p>";
