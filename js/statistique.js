@@ -167,12 +167,18 @@ function compterTypeStation(data_type) {
     .sort((a, b) => a.type.localeCompare(b.type));
 }
 
-async function afficherBarplotType(dep) {
+async function afficherPieType(dep) {
   const data_type = await fetchTypePrise(dep);
   const data = compterTypeStation(data_type);
 
   const labels = data.map(item => item.type);
   const valeurs = data.map(item => item.nb);
+
+  // Génération automatique d'une couleur différente par part
+  const couleurs = labels.map((_, i) => {
+    const hue = (i * 360 / labels.length) % 360;
+    return `hsla(${hue}, 70%, 55%, 0.7)`;
+  });
 
   const ctx = document.getElementById('typeChart').getContext('2d');
 
@@ -181,14 +187,14 @@ async function afficherBarplotType(dep) {
   }
 
   typeChart = new Chart(ctx, {
-    type: 'bar',
+    type: 'pie',
     data: {
       labels: labels,
       datasets: [{
-        label: 'Nombre de stations avec ce type de prise',
+        label: 'Répartition des types de prises',
         data: valeurs,
-        backgroundColor: 'rgba(54, 162, 235, 0.6)',
-        borderColor: 'rgba(54, 162, 235, 1)',
+        backgroundColor: couleurs,
+        borderColor: couleurs.map(c => c.replace('0.7', '1')),
         borderWidth: 1
       }]
     },
@@ -197,19 +203,17 @@ async function afficherBarplotType(dep) {
       plugins: {
         tooltip: {
           callbacks: {
-            label: ctx => `${ctx.parsed.y} station(s)`
+            label: ctx => `${ctx.label}: ${ctx.parsed} station(s)`
           }
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: { stepSize: 1 }
+        },
+        legend: {
+          position: 'bottom'
         }
       }
     }
   });
 }
+
 
 
 async function fetchImplantation(dep) {
@@ -223,29 +227,39 @@ async function fetchImplantation(dep) {
   return await response.json();
 }
 
-async function afficherBarplotImplantation(dep) {
+async function afficherPieImplantation(dep) {
   const data_implant = await fetchImplantation(dep);
   console.log(data_implant);
 
-  // Les données sont déjà agrégées par l'API, pas besoin de les retraiter
-  const data = data_implant.sort((a, b) => parseInt(a.implantation_station) - parseInt(b.implantation_station));
+  const data = data_implant.sort(
+    (a, b) => parseInt(a.implantation_station) - parseInt(b.implantation_station)
+  );
 
   const labels = data.map(item => `${item.implantation_station} pdc`);
   const valeurs = data.map(item => parseInt(item.total));
 
   const ctx = document.getElementById('implantChart').getContext('2d');
+
   if (implantChart !== null) {
     implantChart.destroy();
   }
+
   implantChart = new Chart(ctx, {
-    type: 'bar',
+    type: 'pie',
     data: {
       labels: labels,
       datasets: [{
-        label: "Nombre de stations avec ce type d'implantation",
+        label: "Répartition des implantations",
         data: valeurs,
-        backgroundColor: 'rgba(54, 162, 235, 0.6)',
-        borderColor: 'rgba(54, 162, 235, 1)',
+        backgroundColor: [
+          'rgba(54, 162, 235, 0.6)',
+          'rgba(255, 99, 132, 0.6)',
+          'rgba(255, 206, 86, 0.6)',
+          'rgba(75, 192, 192, 0.6)',
+          'rgba(153, 102, 255, 0.6)',
+          'rgba(255, 159, 64, 0.6)'
+        ],
+        borderColor: 'white',
         borderWidth: 1
       }]
     },
@@ -254,19 +268,17 @@ async function afficherBarplotImplantation(dep) {
       plugins: {
         tooltip: {
           callbacks: {
-            label: ctx => `${ctx.parsed.y} station(s)`
+            label: ctx => `${ctx.label}: ${ctx.parsed} station(s)`
           }
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: { stepSize: 1 }
+        },
+        legend: {
+          position: 'bottom'
         }
       }
     }
   });
 }
+
 
 //// SERT A SELECTIONNER LA Valeur du dep choisi
 const select = document.getElementById('dept');
@@ -287,8 +299,8 @@ select.addEventListener('change', async () => {
   console.log(codeDepartement);
   await afficherBarplotPuissance(codeDepartement);
   await afficherBarplotNbpoint(codeDepartement);
-  await afficherBarplotType(codeDepartement);
-  await afficherBarplotImplantation(codeDepartement);
+  await afficherPieType(codeDepartement);
+  await afficherPieImplantation(codeDepartement);
   console.log("test");
 
 });
