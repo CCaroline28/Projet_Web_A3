@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>LEF IRVE - Modification</title>
+    <link rel="stylesheet" href="../css/modification.css">
+</head>
+
+<body>
+
+<header class="navbar">
+    <div class="brand">
+        <img src="../img/logo1.png" alt="Logo LEF IRVE" class="logo-img">
+        <h1>LEF IRVE</h1>
+    </div>
+
+    <nav>
+        <a href="index.html">🏠 Accueil</a>
+        <a href="visualisation.html" class="active">📍 Visualisation</a>
+        <a href="statistique.html">📊 Statistique</a>
+    </nav>
+</header>
+
+<main>
+    <section class="form-card">
+        <h2>Modification d’un point de charge</h2>
+        <p>Modifiez les informations puis enregistrez.</p>
+
+        <form id="formModification">
+            <input type="hidden" id="id_prise">
+
+            <label>Nombre de points de charge</label>
+            <input type="number" id="nbre_pdc" required>
+
+            <label>Puissance nominale</label>
+            <input type="number" step="0.1" id="puissance_nominale" required>
+            <label>Nom station</label>
+<input type="text" id="nom_station">
+
+<label>Longitude</label>
+<input type="number" step="0.000001" id="longitude">
+
+<label>Latitude</label>
+<input type="number" step="0.000001" id="latitude">
+
+<label>Code postal</label>
+<input type="number" id="code_postal">
+
+<label>Implantation</label>
+<input type="text" id="implantation_station">
+
+            <label>Condition d’accès</label>
+            <input type="text" id="condition_acces" required>
+
+            <label>Réservation</label>
+            <select id="reservation">
+                <option value="0">Non</option>
+                <option value="1">Oui</option>
+            </select>
+
+            <label>Date de mise en service</label>
+            <input type="date" id="date_mise_en_service" required>
+
+            <button type="submit">Enregistrer</button>
+        </form>
+    </section>
+</main>
+
+<footer>
+    <p>© 2026 ISEN - Projet Big Data / IA / Web</p>
+    <p>Trinôme 2</p>
+</footer>
+
+<script src="../js/modification.js"></script>
+</body>
+</html>

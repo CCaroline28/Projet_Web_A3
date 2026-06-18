@@ -1,120 +1,152 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LEF IRVE – Bornes de recharge électrique</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEF IRVE - Visualisation</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <link rel="stylesheet" href="../css/visualisation.css">
 </head>
+
 <body>
 
-  <!-- NAVBAR -->
-  <header class="navbar">
-    <div class="navbar__brand">
-      <div class="navbar__logo">
-        <img src="img/logo.png" alt="Logo LEF IRVE" class="navbar__logo-img" />
-      </div>
-      <span class="navbar__name">LEF IRVE</span>
+<header class="navbar">
+    <div class="brand">
+        <img src="../img/logo1.png" alt="Logo LEF IRVE" class="logo-img">
+        <h1>LEF IRVE</h1>
     </div>
-    <nav class="navbar__links">
-      <a href="index.html" class="navbar__link">Accueil</a>
-      <a href="visualisation.html" class="navbar__link navbar__link--active">Visualisation</a>
-      <a href="statistique.html" class="navbar__link">Statistique</a>
+
+    <nav>
+        <a href="index.html">🏠 Accueil</a>
+        <a href="visualisation.html" class="active">📍 Visualisation</a>
+        <a href="statistique.html">📊 Statistique</a>
+        <a href="index.html">← Retour</a>
     </nav>
-  </header>
+</header>
 
-  <main class="main">
+<main>
 
-    <section class="points-charge">
-      <h2>Points de charge</h2>
+    <section class="title-section">
+        <h2>Visualisation des stations</h2>
+        <p>Consultez et gérez les stations de recharge</p>
+    </section>
 
-      <div class="filter-bar">
-        <div class="filter-group">
-          <label>Département</label>
-          <select id="filtre-dep">
-    <option value="">Tous les départements</option>
-    </select>
+    <!-- FILTRES -->
+    <section class="filters">
+
+        <div>
+            <label>Département</label>
+            <select id="departement">
+                <option value="">Tous les départements</option>
+            </select>
         </div>
 
-        <div class="filter-group-checkbox">
-          <label>Type de prise</label>
-          <div class="checkbox-list">
-            <label><input type="checkbox" value="2"> Type 2</label>
-            <label><input type="checkbox" value="combo_ccs"> Combo CCS</label>
-            <label><input type="checkbox" value="ef"> E/F</label>
-            <label><input type="checkbox" value="ChaDeMo"> ChaDeMo</label>
-          </div>
+        <div>
+            <label>Type de prise</label>
+            <select id="typePrise">
+                <option value="">Tous les types</option>
+            </select>
         </div>
 
-        <button id="btn-filtrer" class="btn-primary">Filtrer</button>
-      </div>
+        <button id="btnValider">🔍 Valider</button>
 
-      <div class="table-headers">
-        <h2>Visualisation des installations</h2>
-        <p class="loading" id="table-message">Chargement des données...</p>
+    </section>
 
-        <table id="tableau-prises" style="display:none;">
-          <thead>
-            <tr>
-              <th>Nom station</th>
-              <th>Commune</th>
-              <th>Code postal</th>
-              <th>Implantation</th>
-              <th>Nb points de charge</th>
-              <th>Puissance (kW)</th>
-              <th>Type de prise</th>
-              <th>Paiement</th>
-              <th>Réservation</th>
-              <th>Accès</th>
-            </tr>
-          </thead>
-          <tbody id="tbody-prises"></tbody>
+    <!-- BOUTONS TABLEAU / CARTE -->
+    <div class="switch-buttons">
+
+        <button id="btnTableau" class="switch active">
+            📋 Afficher le tableau
+        </button>
+
+        <button id="btnCarte" class="switch">
+            🗺️ Afficher la carte
+        </button>
+
+    </div>
+
+    <!-- TABLEAU -->
+    <section class="table-card" id="sectionTableau">
+
+        <h3>Points de charge</h3>
+
+        <p id="nbResultats">
+            Nombre de résultats : chargement...
+        </p>
+
+        <table>
+            <thead>
+<tr>
+    <th>ID prise</th>
+    <th>Nom station</th>
+    <th>Longitude</th>
+    <th>Latitude</th>
+    <th>Département</th>
+    <th>Code postal</th>
+    <th>Type paiement</th>
+    <th>Type prise</th>
+    <th>Nb PDC</th>
+    <th>Puissance</th>
+    <th>Implantation</th>
+    <th>Réservation</th>
+    <th>Condition accès</th>
+    <th>Date mise en service</th>
+</tr>
+</thead>
+
+            <tbody id="tableBody"></tbody>
+
         </table>
 
-        <div id="pagination"></div>
+        <div class="table-actions">
 
-        <div class="d-flex justify-content-between align-items-center mt-3">
-          <div>
-            <label for="itemsPerPage">Afficher</label>
-            <select id="itemsPerPage" class="form-select d-inline-block w-auto">
-              <option value="10">10</option>
-              <option value="25">25</option>
-              <option value="50" selected>50</option>
-              <option value="100">100</option>
-            </select>
-            <span>installations par page</span>
-          </div>
+            <a href="ajout.html" class="yellow">
+                Ajouter une prise
+            </a>
 
-          <div class="actions">
-            <button class="btn-yellow" onclick="window.location.href='ajouter.html'">+ Ajouter</button>
-            <button class="btn-yellow" onclick="window.location.href='predire_clusters.html'">Clusters</button>
-            <button class="btn-yellow" onclick="window.location.href='predire_puissance_nominale.html'">Puissance</button>
-            <button class="btn-yellow" onclick="window.location.href='predire_implantation.html'">Implantation</button>
-          </div>
+            <button class="yellow">
+                Prédire les clusters
+            </button>
+
+            <button class="yellow">
+                Prédire la puissance
+            </button>
+
+            <button class="yellow">
+                Prédire l’implantation
+            </button>
+
         </div>
 
-      </div>
     </section>
 
-    <section class="map-section">
-      <h2>Carte des stations</h2>
-      <div class="map-placeholder">
-        <p>Intégration de la carte interactive (Leaflet/Mapbox)</p>
-      </div>
+    <!-- CARTE -->
+    <section class="map-card hidden" id="sectionCarte">
+
+        <h3>Carte des stations</h3>
+
+        <div id="map"></div>
+
+        <button class="yellow center">
+            Prédire les clusters
+        </button>
+
     </section>
 
-  </main>
+</main>
 
-  <!-- FOOTER -->
-  <footer class="footer">
-    <span class="footer__left">2026 ISEN – Projet Big Data / IA / Web</span>
-    <span class="footer__right">Trinôme 2</span>
-  </footer>
+<div id="contextMenu" class="context-menu">
+    <button id="modifierBtn">✏️ Modifier</button>
+    <button id="supprimerBtn">🗑️ Supprimer</button>
+</div>
 
-  <script src="js/visualisation.js"></script>
+<footer>
+    <p>© 2026 ISEN - Projet Big Data / IA / Web</p>
+    <p>Trinôme 2</p>
+</footer>
 
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="../js/visualisation.js"></script>
 </body>
 </html>

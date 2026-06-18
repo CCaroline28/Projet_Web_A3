@@ -1,132 +1,119 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LEF IRVE – Bornes de recharge électrique</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEF IRVE - Accueil</title>
+    <link rel="stylesheet" href="../css/accueil.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
+
 <body>
 
-  <!-- NAVBAR -->
-  <header class="navbar">
-    <div class="navbar__brand">
-      <div class="navbar__logo">
-        <img src="img/logo.png" alt="Logo LEF IRVE" class="navbar__logo-img" />
-      </div>
-      <span class="navbar__name">LEF IRVE</span>
+<header class="navbar">
+    <div class="brand">
+       <img src="../img/logo1.png"
+     alt="Logo LEF IRVE"
+     class="logo-img">
+        <h1>LEF IRVE</h1>
     </div>
-    <nav class="navbar__links">
-      <a href="#" class="navbar__link navbar__link--active">Accueil</a>
-      <a href="visualisation.html" class="navbar__link">Visualisation</a>
-      <a href="statistique.html" class="navbar__link">Statistique</a>
+
+    <nav>
+        <a href="index.html" class="active">🏠 Accueil</a>
+        <a href="visualisation.html">📍 Visualisation</a>
+        <a href="statistique.html">📊 Statistique</a>
     </nav>
-  </header>
+</header>
 
-  <!-- MAIN CONTENT -->
-  <main class="main">
+<main>
 
-    <!-- HERO SECTION -->
     <section class="hero">
-      <div class="hero__text">
-        <h1 class="hero__title">Bienvenue sur LEF IRVE</h1>
-        <p class="hero__description">
-          Explorez et analysez le déploiement des infrastructures de recharge pour véhicules électriques (IRVE) en France. 
-          Visualisez les données par département, suivez l'évolution des stations et identifiez les zones les mieux équipées sur le territoire.
-        </p>
-      </div>
-      <div class="hero__illustration">
-        <img src="img/carte_accueil.jpg" alt="Illustration" class="hero__map" />
-      </div>
+        <div class="hero-text">
+            <h2>
+                Visualisez les<br>
+                <span>infrastructures de<br>
+                recharge électrique</span><br>
+                en France
+            </h2>
+
+            <div class="line"></div>
+
+            <p>
+                Analysez les stations IRVE, leurs caractéristiques
+                et leur répartition sur le territoire.
+            </p>
+        </div>
+
+        <div class="hero-image">
+            <img src="../img/carte_accueil.png" alt="Carte des bornes de recharge en France">
+        </div>
     </section>
 
-    <!-- STATS CARDS -->
-    <section class="stats">
-      <div class="stat-card">
-        <div class="stat-card__icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-            <rect x="3" y="6" width="18" height="14" rx="2" fill="white" opacity="0.9"/>
-            <path d="M8 6V4M16 6V4" stroke="white" stroke-width="2" stroke-linecap="round"/>
-            <circle cx="15" cy="14" r="2" fill="#8B3A3A"/>
-            <path d="M15 12V10" stroke="#8B3A3A" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div class="stat-card__content">
-          <span class="stat-card__label">Station de recharge</span>
-          <span class="stat-card__value" id="total-stations">---</span>
-        </div>
-      </div>
+    <section class="stats-cards">
 
-      <div class="stat-card">
-        <div class="stat-card__icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-            <path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13L13 2Z" fill="white" stroke="white" stroke-width="1" stroke-linejoin="round"/>
-          </svg>
+        <div class="card">
+            <div class="card-icon">🔌</div>
+            <div>
+                <h3>Stations de recharge</h3>
+                <strong id="nbStations">Chargement...</strong>
+                <p>Stations enregistrées</p>
+            </div>
         </div>
-        <div class="stat-card__content">
-          <span class="stat-card__label">Points de charge</span>
-          <span class="stat-card__value" id="total-points-charge">---</span>
-        </div>
-      </div>
 
-      <div class="stat-card">
-        <div class="stat-card__icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="white" opacity="0.9"/>
-            <circle cx="12" cy="9" r="2.5" fill="#8B3A3A"/>
-          </svg>
+        <div class="card">
+            <div class="card-icon">⚡</div>
+            <div>
+                <h3>Points de charge</h3>
+                <strong id="nbPrises">Chargement...</strong>
+                <p>Connecteurs disponibles</p>
+            </div>
         </div>
-        <div class="stat-card__content">
-          <span class="stat-card__label">Département le mieux équipé</span>
-          <span class="stat-card__value" id="top-departement">---</span>
+
+        <div class="card">
+            <div class="card-icon">🏆</div>
+            <div>
+                <h3>Département le mieux équipé</h3>
+                <strong id="topDepartement">Chargement...</strong>
+                <p id="nbDepartement">Stations</p>
+            </div>
         </div>
-      </div>
+
     </section>
 
-    <!-- BOTTOM SECTION -->
-    <section class="bottom">
-      <div class="about-card">
-        <h2 class="about-card__title">À propos</h2>
-        <p class="about-card__text">
-          Ce projet a été réalisé dans le cadre du cursus Big Data, IA & Web à l'ISEN. Il vise à exploiter les données 
-          ouvertes sur les infrastructures de recharge pour véhicules électriques (IRVE) publiées par data.gouv.fr. 
-          L'objectif est de proposer des visualisations claires et interactives pour mieux comprendre le déploiement 
-          territorial des bornes de recharge en France métropolitaine.
-        </p>
-      </div>
-      <div class="tech-card">
-        <h2 class="tech-card__title">Technologies utilisées</h2>
-        <div class="tech-card__logos">
-          <div class="tech-logo">
-            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v13/icons/amazondynamodb.svg" alt="BDD" width="48" height="48" />
-            <span>BDD</span>
-          </div>
-          <div class="tech-logo">
-            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v13/icons/javascript.svg" alt="JavaScript" width="48" height="48" />
-            <span>JavaScript</span>
-          </div>
-          <div class="tech-logo">
-            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v13/icons/html5.svg" alt="HTML" width="48" height="48" />
-            <span>HTML</span>
-          </div>
-          <div class="tech-logo">
-            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v13/icons/php.svg" alt="PHP" width="48" height="48" />
-            <span>PHP</span>
-          </div>
+    <section class="bottom-section">
+
+        <div class="about-box">
+    <h3>ℹ️ À propos du projet</h3>
+
+    <p>
+        LEF IRVE est une plateforme de visualisation et d'analyse des
+        infrastructures de recharge pour véhicules électriques en France.
+        Développée dans le cadre du projet Big Data / IA / Web, elle permet
+        d'explorer les stations, d'étudier leur répartition géographique et
+        d'exploiter les données pour réaliser des analyses statistiques et
+        des prédictions.
+    </p>
+</div>
+
+        <div class="tech-box">
+            <h3>🖥️ Technologies utilisées</h3>
+
+            <div  class="tech-list-image">
+    <img src="../img/tech_util.png" alt="Technologies utilisées">
+
         </div>
-      </div>
+
     </section>
-  </main>
 
-  <!-- FOOTER -->
-  <footer class="footer">
-    <span class="footer__left">2026 ISEN – Projet Big Data / IA / Web</span>
-    <span class="footer__right">Trinôme 2</span>
-  </footer>
+</main>
 
-  <script src="js/stat.js"></script>
+<footer>
+    <p>© 2026 ISEN - Projet Big Data / IA / Web</p>
+    <p>Trinôme 2</p>
+</footer>
+
+<script src="../js/accueil.js"></script>
 </body>
 </html>
