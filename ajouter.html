@@ -35,24 +35,24 @@
           <input type="number" name="nb_points" placeholder="0">
           <label>Condition d'accès</label>
           <select name="acces">
-            <option value="Public">Public</option>
-            <option value="Prive">Privé</option>
+            <option value="Accès libre">Public</option>
+            <option value="Accès privé">Privé</option>
           </select>
         </div>
 
         <div class="col">
           <label>Implantation station</label>
           <select name="implantation">
-            <option value="PRC">Parking privé réservé à la clientèle</option>
-            <option value="SDRR">Station dédiée à la recharge rapide</option>
-            <option value="PP">Parking public</option>
+            <option value="Parking privé réservé à la clientèle">Parking privé réservé à la clientèle</option>
+            <option value="Station dédiée à la recharge rapide">Station dédiée à la recharge rapide</option>
+            <option value="Parking public">Parking public</option>
             <option value="Voirie">Voirie</option>
-            <option value="PPUP">Parking privé à usage public</option>
+            <option value="Parking privé à usage public">Parking privé à usage public</option>
           </select>
           <label>Réservation</label>
           <select name="reservation">
-            <option value="FALSE">FALSE</option>
-            <option value="TRUE">TRUE</option>
+            <option value="0">FALSE</option>
+            <option value="1">TRUE</option>
           </select>
           <label>Date mise en service</label>
           <input type="date" name="date_service">
@@ -67,11 +67,22 @@
           </div>
           <label>Type de prise</label>
           <div class="checkbox-group">
-            <label><input type="checkbox" name="prise" value="Type2"> Type 2</label>
-            <label><input type="checkbox" name="prise" value="Combo"> Combo CCS</label>
-            <label><input type="checkbox" name="prise" value="Chademo"> Chademo</label>
-            <label><input type="checkbox" name="prise" value="Chademo"> ef</label>
+            <label><input type="checkbox" name="prise" value="2"> Type 2</label>
+            <label><input type="checkbox" name="prise" value="combo"> Combo CCS</label>
+            <label><input type="checkbox" name="prise" value="chademo"> Chademo</label>
+            <label><input type="checkbox" name="prise" value="ef"> ef</label>
           </div>
+          <div class="col">  <!-- RAJOUTEEEEE. -->
+
+            <label>Nom de la station *</label>
+            <input type="text" name="nom_station" required>
+  
+            <label>Puissance nominale (kW) *</label>
+            <input type="number" name="puissance_nominale" step="any" required>
+  
+          </div>
+
+
           <label>Code postal</label>
           <input type="text" name="code_postal">
         </div>
