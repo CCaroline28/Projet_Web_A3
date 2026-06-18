@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>LEF IRVE - Prédiction puissance</title>
+    <link rel="stylesheet" href="../css/prediction_puissance.css">
+</head>
+
+<body>
+
+<header class="navbar">
+    <div class="brand">
+        <img src="../img/logo1.png" class="logo-img" alt="Logo LEF IRVE">
+        <h1>LEF IRVE</h1>
+    </div>
+
+    <nav>
+        <a href="index.html">🏠 Accueil</a>
+        <a href="visualisation.html">🗺️ Visualisation</a>
+        <a href="statistique.html">📊 Statistique</a>
+        <a href="visualisation.html">← Retour</a>
+    </nav>
+</header>
+
+<main>
+
+    <section class="page-title">
+        <div class="title-icon">⚡</div>
+        <div>
+            <h2>Prédiction de la puissance</h2>
+            <p>Découvrez la puissance nominale estimée (kW) pour un point de charge à partir de ses caractéristiques.</p>
+        </div>
+    </section>
+
+    <section class="top-section">
+
+        <div class="result-card">
+            <h3>🎯 Résultat de la prédiction</h3>
+
+            <p class="label">Puissance prédite</p>
+            <h1><span id="puissancePredite">Chargement...</span></h1>
+
+            <div class="tag" id="categoriePuissance">Analyse en cours</div>
+
+            <div class="gauge">
+                <div class="gauge-fill"></div>
+                <div class="gauge-icon">⚡</div>
+            </div>
+
+            <p class="label">Niveau de confiance</p>
+            <h2><span id="confiance">87</span> %</h2>
+
+            <div class="progress">
+                <div class="progress-fill"></div>
+            </div>
+
+            <div class="info-box">
+                ℹ️ Cette prédiction est basée sur un modèle entraîné sur les données historiques des IRVE.
+            </div>
+
+            <a href="visualisation.html" class="outline-btn">← Modifier les caractéristiques</a>
+        </div>
+
+        <div class="chart-card">
+            <h3>📊 Distribution des puissances existantes</h3>
+<div class="chart-wrapper">
+    <div class="y-axis-title">Nombre de points de charge</div>
+            <div class="chart">
+                <div class="bar" style="height:140px"><span>512</span></div>
+                <div class="bar" style="height:260px"><span>1 082</span></div>
+                <div class="bar active" style="height:330px"><span>1 365</span></div>
+                <div class="bar" style="height:210px"><span>842</span></div>
+                <div class="bar" style="height:100px"><span>356</span></div>
+                <div class="bar" style="height:55px"><span>121</span></div>
+            </div>
+        </div>
+            <div class="x-labels">
+                <span>0 - 22</span>
+                <span>22 - 50</span>
+                <span>50 - 100</span>
+                <span>100 - 150</span>
+                <span>150 - 250</span>
+                <span>&gt; 250</span>
+            </div>
+
+            <p class="chart-title">Puissance nominale (kW)</p>
+
+            <p class="legend">------ Puissance prédite : <span id="legendPuissance">---</span></p>
+
+            <div class="green-info">
+                ℹ️ La puissance prédite se situe dans la plage <strong id="plagePuissance">---</strong>, parmi les valeurs les plus fréquentes.
+            </div>
+        </div>
+
+    </section>
+
+    <section class="summary-card">
+        <h3>📋 Résumé des caractéristiques du point de charge</h3>
+
+        <div class="summary-grid">
+
+            <div class="summary-item">
+                <div class="summary-icon">📍</div>
+                <div>
+                    <p>Localisation</p>
+                    <strong id="localisation">---</strong>
+                </div>
+            </div>
+
+            <div class="summary-item">
+                <div class="summary-icon">🔌</div>
+                <div>
+                    <p>Type de prise</p>
+                    <strong id="typePrise">---</strong>
+                </div>
+            </div>
+
+            <div class="summary-item">
+                <div class="summary-icon">🏢</div>
+                <div>
+                    <p>Implantation</p>
+                    <strong id="implantation">---</strong>
+                </div>
+            </div>
+
+            <div class="summary-item">
+                <div class="summary-icon">⚡</div>
+                <div>
+                    <p>Puissance réelle</p>
+                    <strong id="puissanceReelle">---</strong>
+                </div>
+            </div>
+
+            <div class="summary-item">
+                <div class="summary-icon">📅</div>
+                <div>
+                    <p>Nb points</p>
+                    <strong id="nbrePdc">---</strong>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+</main>
+
+<footer>
+    <p>2026 ISEN - Projet Big Data / IA / Web</p>
+    <p>Trinôme 2</p>
+</footer>
+
+<script src="../js/prediction_puissance.js"></script>
+</body>
+</html>
