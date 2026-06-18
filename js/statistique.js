@@ -305,6 +305,16 @@ select.addEventListener('change', async () => {
 
 });
 
+//se charge au lancement de page
+document.addEventListener('DOMContentLoaded', async () => {
+  const codeDepartement = "";
+  await afficherBarplotPuissance(codeDepartement);
+  await afficherBarplotNbpoint(codeDepartement);
+  await afficherPieType(codeDepartement);
+  await afficherPieImplantation(codeDepartement);
+  console.log("Chargement initial terminé");
+});
+
 // document.addEventListener('DOMContentLoaded', async () => {
 //   const valeurInitiale = '%';
 //     await afficherBarplotPuissance(valeurInitiale); // Affichage au chargement ... on a rien a afficher de base...
