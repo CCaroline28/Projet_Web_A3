@@ -298,16 +298,16 @@ GROUP BY nb_pdc
 #Renvoie un tableau contenant l'id de la station et la puissance de ses prises (séparé par une virgule)
 function dbCountpuissance($db,$dep){
     try {
-        $request = "SELECT implantation_station, GROUP_CONCAT(DISTINCT puissance_nominale ORDER BY puissance_nominale SEPARATOR ', ') AS puissances
+        $request = "SELECT id_station, GROUP_CONCAT(DISTINCT puissance_nominale ORDER BY puissance_nominale SEPARATOR ', ') AS puissances
 FROM (
     SELECT  puissance_nominale, id_prise, id_station, consolidated_code_postal
 	FROM prise
 ) AS sub
-GROUP BY id_station
-WHERE consolidated_code_postal LIKE :dep;";
+WHERE consolidated_code_postal LIKE :dep
+GROUP BY id_station;";
         $statement = $db->prepare($request);
-        $statement->execute();
-        $stmt->execute([":dep" => $dep . "%"]);
+        $statement->execute([
+            ":dep" => $dep . "%"]);
         $result = $statement->fetchAll(PDO::FETCH_ASSOC);
         return $result;
     } catch (PDOException $exception) {
