@@ -1,122 +1,157 @@
-'use strict';
+let map;
+let markersLayer;
+let ligneSelectionnee = null;
 
-// Variables globales pour mémoriser l'état courant
-let currentDep = '';
-let currentTypes = [];
-let currentLimit = 50;
+document.addEventListener("DOMContentLoaded", async function () {
+    initialiserCarte();
+    await chargerFiltres();
+    await chargerDonnees();
+document.getElementById("btnTableau").addEventListener("click", function(){
+    document.getElementById("sectionTableau").classList.remove("hidden");
+    document.getElementById("sectionCarte").classList.add("hidden");
 
-async function chargerTableau(dep, typesPrise, page = 1, limit = currentLimit) {
-
-  // Mémoriser les filtres actifs
-  currentDep   = dep;
-  currentTypes = typesPrise;
-  currentLimit = limit;
-
-  var message = document.getElementById('table-message');
-  var tableau = document.getElementById('tableau-prises');
-  var tbody   = document.getElementById('tbody-prises');
-
-  message.textContent = 'Chargement...';
-  message.style.display = 'block';
-  tableau.style.display = 'none';
-
-  var params = new URLSearchParams();
-
-  if (dep) params.append('dep', dep);
-  if (typesPrise.length) params.append('types', typesPrise.join(','));
-
-  params.append('page', page);
-  params.append('limit', limit);
-
-  try {
-
-    var response = await fetch('php/request.php/visu/prises?' + params.toString());
-
-    if (!response.ok) throw new Error('Erreur HTTP ' + response.status);
-
-    var json = await response.json();
-
-    var data  = json.data;
-    var total = json.total;
-
-    if (!data || !data.length) {
-      message.textContent = 'Aucun résultat trouvé.';
-      return;
-    }
-
-    // Pagination
-    renderPagination(total, limit, page);
-
-    // Rendu table
-    var html = '';
-
-    data.forEach(function(row) {
-
-      var types = row.type_de_prise
-        ? row.type_de_prise.split('-').map(t => '<span class="badge">' + t + '</span>').join('')
-        : '-';
-
-      var paiements = row.type_de_paiement
-        ? row.type_de_paiement.split('-').map(p => '<span class="badge">' + p + '</span>').join('')
-        : '-';
-
-      html +=
-        '<tr>' +
-          '<td>' + (row.nom_station             || '-') + '</td>' +
-          '<td>' + (row.consolidated_commune     || '-') + '</td>' +
-          '<td>' + (row.consolidated_code_postal || '-') + '</td>' +
-          '<td>' + (row.implantation_station     || '-') + '</td>' +
-          '<td>' + (row.nbre_pdc                 || '-') + '</td>' +
-          '<td>' + (row.puissance_nominale       || '-') + '</td>' +
-          '<td>' + types                                 + '</td>' +
-          '<td>' + paiements                            + '</td>' +
-          '<td>' + (row.reservation == 1 ? 'Oui' : 'Non') + '</td>' +
-          '<td>' + (row.condition_acces          || '-') + '</td>' +
-        '</tr>';
-    });
-
-    tbody.innerHTML = html;
-
-    message.style.display = 'none';
-    tableau.style.display = 'table';
-
-  } catch (e) {
-    message.textContent = 'Erreur lors du chargement des données.';
-    console.error(e);
-  }
-}
-
-function renderPagination(total, limit, currentPage) {
-  var container = document.getElementById('pagination');
-  container.innerHTML = '';
-
-  var pages = Math.ceil(total / limit);
-  if (pages <= 1) return;
-
-  for (let i = 1; i <= pages; i++) {
-    var btn = document.createElement('button');
-    btn.textContent = i;
-    if (i === currentPage) btn.disabled = true; // page active
-    btn.addEventListener('click', function() {
-      chargerTableau(currentDep, currentTypes, i, limit);
-    });
-    container.appendChild(btn);
-  }
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-
-  chargerTableau('', [], 1, currentLimit);
-
-  document.getElementById('btn-filtrer').addEventListener('click', function() {
-    var dep    = document.getElementById('filtre-dep').value.trim();
-    var cases  = document.querySelectorAll('.checkbox-list input:checked');
-    var typesPrise = Array.from(cases).map(function(c) { return c.value; });
-    chargerTableau(dep, typesPrise, 1, currentLimit);
-  });
-
-  document.getElementById('itemsPerPage').addEventListener('change', function() {
-    chargerTableau(currentDep, currentTypes, 1, parseInt(this.value));
-  });
-
+    this.classList.add("active");
+    document.getElementById("btnCarte").classList.remove("active");
 });
+
+document.getElementById("btnCarte").addEventListener("click", function(){
+    document.getElementById("sectionCarte").classList.remove("hidden");
+    document.getElementById("sectionTableau").classList.add("hidden");
+
+    this.classList.add("active");
+    document.getElementById("btnTableau").classList.remove("active");
+
+    setTimeout(() => {
+        map.invalidateSize();
+    }, 200);
+});
+    document.getElementById("btnValider").addEventListener("click", chargerDonnees);
+
+    document.addEventListener("click", function () {
+        document.getElementById("contextMenu").style.display = "none";
+    });
+
+    document.getElementById("modifierBtn").addEventListener("click", function () {
+        if (ligneSelectionnee) {
+            window.location.href = "modification.html?id_prise=" + ligneSelectionnee;
+        }
+    });
+
+    document.getElementById("supprimerBtn").addEventListener("click", async function () {
+        if (!ligneSelectionnee) return;
+
+        if (!confirm("Voulez-vous vraiment supprimer ce point de charge ?")) return;
+
+        const response = await fetch("../php/supprimer_prise.php?id_prise=" + ligneSelectionnee);
+        const result = await response.json();
+
+        if (result.success) {
+            alert("Point de charge supprimé.");
+            await chargerDonnees();
+        } else {
+            alert(result.message);
+        }
+    });
+});
+
+function initialiserCarte() {
+    map = L.map("map").setView([46.7, 2.5], 6);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap"
+    }).addTo(map);
+
+    markersLayer = L.layerGroup().addTo(map);
+}
+
+async function chargerFiltres() {
+    const response = await fetch("../php/visualisation_data.php?action=filtres");
+    const data = await response.json();
+
+    const departementSelect = document.getElementById("departement");
+    const typeSelect = document.getElementById("typePrise");
+
+    data.departements.forEach(dep => {
+        const option = document.createElement("option");
+        option.value = dep.code;
+        option.textContent = dep.nom;
+        departementSelect.appendChild(option);
+    });
+
+    data.types.forEach(type => {
+        const option = document.createElement("option");
+        option.value = type;
+        option.textContent = type;
+        typeSelect.appendChild(option);
+    });
+}
+
+async function chargerDonnees() {
+    const departement = document.getElementById("departement").value;
+    const typePrise = document.getElementById("typePrise").value;
+
+    const url =
+        "../php/visualisation_data.php?action=points" +
+        "&departement=" + encodeURIComponent(departement) +
+        "&type=" + encodeURIComponent(typePrise);
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    const tbody = document.getElementById("tableBody");
+    tbody.innerHTML = "";
+    markersLayer.clearLayers();
+
+    document.getElementById("nbResultats").textContent =
+        "Nombre de résultats : " + data.total;
+
+    data.points.forEach(point => {
+        const tr = document.createElement("tr");
+
+       tr.innerHTML = `
+    <td>${point.id_prise}</td>
+    <td>${point.nom_station}</td>
+    <td>${point.longitude}</td>
+    <td>${point.latitude}</td>
+    <td>${point.departement}</td>
+    <td>${point.code_postal}</td>
+    <td>${point.type_paiement ?? "Non renseigné"}</td>
+    <td><span class="badge">${point.type_de_prise ?? "Non renseigné"}</span></td>
+    <td>${point.nbre_pdc}</td>
+    <td>${point.puissance_nominale}</td>
+    <td>${point.implantation_station}</td>
+    <td>${point.reservation == 1 ? "Oui" : "Non"}</td>
+    <td>${point.condition_acces}</td>
+    <td>${point.date_mise_en_service}</td>
+`;
+        tr.addEventListener("contextmenu", function (event) {
+            event.preventDefault();
+
+            ligneSelectionnee = point.id_prise;
+
+            const menu = document.getElementById("contextMenu");
+            menu.style.display = "block";
+            menu.style.left = event.pageX + "px";
+            menu.style.top = event.pageY + "px";
+        });
+
+        tbody.appendChild(tr);
+
+        if (point.latitude && point.longitude) {
+            const marker = L.marker([
+                Number(point.latitude),
+                Number(point.longitude)
+            ]);
+
+            marker.bindPopup(`
+                <strong>${point.nom_station}</strong><br>
+                Département : ${point.departement}<br>
+                Type : ${point.type_de_prise ?? "Non renseigné"}<br>
+                Puissance : ${point.puissance_nominale} kW<br>
+                Points : ${point.nbre_pdc}
+            `);
+
+            markersLayer.addLayer(marker);
+        }
+    });
+}
