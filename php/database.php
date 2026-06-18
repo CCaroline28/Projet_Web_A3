@@ -4,17 +4,88 @@ require_once('constantes.php');
 
 function dbConnect() {
     try {
-        $db = new PDO(
-            'mysql:host=' . DB_SERVER . ';dbname=' . DB_NAME . ';charset=utf8;port=' . DB_PORT,
-            DB_USER,
-            DB_PASSWORD
-        );
+        $db = new PDO('mysql:host='.DB_SERVER.';dbname='.DB_NAME.';charset=utf8;port='.DB_PORT, DB_USER, DB_PASSWORD);
         $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        return $db;
+    } catch (PDOException $e) {
+        return null;
+    }
+}
+
+function createdatabase($db) {
+    try {
+        // Correction : $pdo → $db partout
+        $db->exec("SET FOREIGN_KEY_CHECKS = 0");
+        $db->exec("DROP TABLE IF EXISTS paye_avec");
+        $db->exec("DROP TABLE IF EXISTS de_type");
+        $db->exec("DROP TABLE IF EXISTS prise");
+        $db->exec("DROP TABLE IF EXISTS station");
+        $db->exec("DROP TABLE IF EXISTS type_de_prise");
+        $db->exec("DROP TABLE IF EXISTS type_paiement");
+        $db->exec("DROP TABLE IF EXISTS Localisation");
+        $db->exec("SET FOREIGN_KEY_CHECKS = 1");
+
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS type_paiement (
+                type_de_paiement VARCHAR(50) NOT NULL,
+                CONSTRAINT type_paiement_PK PRIMARY KEY (type_de_paiement)
+            ) ENGINE=InnoDB;
+
+            CREATE TABLE IF NOT EXISTS Localisation (
+                consolidated_code_postal INT NOT NULL,
+                consolidated_commune CHAR(50) NOT NULL,
+                CONSTRAINT Localisation_PK PRIMARY KEY (consolidated_code_postal)
+            ) ENGINE=InnoDB;
+
+            CREATE TABLE IF NOT EXISTS station (
+                id_station INT NOT NULL AUTO_INCREMENT,
+                implantation_station CHAR(50) NOT NULL,
+                nom_station CHAR(50) NOT NULL,
+                consolidated_latitude FLOAT NOT NULL,
+                consolidated_longitude FLOAT NOT NULL,
+                CONSTRAINT station_PK PRIMARY KEY (id_station)
+            ) ENGINE=InnoDB;
+
+            CREATE TABLE IF NOT EXISTS type_de_prise (
+                type_de_prise VARCHAR(50) NOT NULL,
+                CONSTRAINT type_de_prise_PK PRIMARY KEY (type_de_prise)
+            ) ENGINE=InnoDB;
+
+            CREATE TABLE IF NOT EXISTS prise (
+                id_prise INT NOT NULL AUTO_INCREMENT,
+                nbre_pdc INT NOT NULL,
+                puissance_nominale FLOAT NOT NULL,
+                condition_acces CHAR(50) NOT NULL,
+                reservation TINYINT(1) NOT NULL,
+                date_mise_en_service DATETIME NOT NULL,
+                id_station INT NOT NULL,
+                consolidated_code_postal INT NOT NULL,
+                CONSTRAINT prise_PK PRIMARY KEY (id_prise),
+                CONSTRAINT prise_id_station_FK FOREIGN KEY (id_station) REFERENCES station(id_station),
+                CONSTRAINT prise_consolidated_code_postal_FK FOREIGN KEY (consolidated_code_postal) REFERENCES Localisation(consolidated_code_postal)
+            ) ENGINE=InnoDB;
+
+            CREATE TABLE IF NOT EXISTS de_type (
+                type_de_prise VARCHAR(50) NOT NULL,
+                id_prise INT NOT NULL,
+                CONSTRAINT de_type_PK PRIMARY KEY (type_de_prise, id_prise),
+                CONSTRAINT de_type_type_de_prise_FK FOREIGN KEY (type_de_prise) REFERENCES type_de_prise(type_de_prise),
+                CONSTRAINT de_type_id_prise_FK FOREIGN KEY (id_prise) REFERENCES prise(id_prise)
+            ) ENGINE=InnoDB;
+
+            CREATE TABLE IF NOT EXISTS paye_avec (
+                type_de_paiement VARCHAR(50) NOT NULL,
+                id_prise INT NOT NULL,
+                CONSTRAINT paye_avec_PK PRIMARY KEY (type_de_paiement, id_prise),
+                CONSTRAINT paye_avec_type_de_paiement_FK FOREIGN KEY (type_de_paiement) REFERENCES type_paiement(type_de_paiement),
+                CONSTRAINT paye_avec_id_prise_FK FOREIGN KEY (id_prise) REFERENCES prise(id_prise)
+            ) ENGINE=InnoDB;
+        ");
     } catch (PDOException $exception) {
-        error_log('Connection error: ' . $exception->getMessage());
+        error_log('Request error: ' . $exception->getMessage());
         return false;
     }
-    return $db;
+    return true;
 }
 
 function dbCountStations($db) {
@@ -196,24 +267,25 @@ function dbCountPrises($db, $dep = '', $types = []) {
     return (int) $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 }
 function dbInsertInstallation($db, $data) {
+    $nbPdc = isset($data['nb_points']) ? (int)$data['nb_points'] : 0;
     try {
         $db->beginTransaction();
 
-        // 1. Insertion de la station
-        $stmt = $db->prepare("INSERT INTO station (nom_station, implantation_station, consolidated_latitude, consolidated_longitude) VALUES (?, ?, ?, ?)");
-        $stmt->execute(['Station', $data['implantation'], $data['latitude'], $data['longitude']]);
+        // 1. Insertion dans station
+        $stmt = $db->prepare("INSERT INTO station (implantation_station, nom_station, consolidated_latitude, consolidated_longitude) VALUES (?, ?, ?, ?)");
+        $stmt->execute([$data['implantation'], 'Nouvelle Station', $data['latitude'], $data['longitude']]);
         $idStation = $db->lastInsertId();
 
-        // 2. Insertion de la prise (Note: j'ai mis des valeurs par défaut pour les champs manquants dans votre formulaire)
+        // 2. Insertion dans prise
         $stmt = $db->prepare("INSERT INTO prise (nbre_pdc, puissance_nominale, condition_acces, reservation, date_mise_en_service, id_station, consolidated_code_postal) VALUES (?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([
-            $data['nb_points_charge'] ?? 0, 
-            0, // puissance_nominale par défaut
-            $data['condition_acces'] ?? 'Public', 
+            (int)($data['nb_points'] ?? 0), 
+            0, 
+            $data['acces'] ?? 'Public', 
             ($data['reservation'] === 'TRUE' ? 1 : 0), 
-            $data['date_mise_en_service'], 
+            $data['date_service'] ?: date('Y-m-d'), 
             $idStation, 
-            $data['code_postal']
+            (int)$data['code_postal']
         ]);
 
         $db->commit();
@@ -224,6 +296,14 @@ function dbInsertInstallation($db, $data) {
         return false;
     }
 }
+function dbGetAllDepartements($db) {
+    // Cette requête récupère les 2 premiers chiffres des codes postaux
+    $stmt = $db->query("SELECT DISTINCT LEFT(consolidated_code_postal, 2) AS code 
+                        FROM Localisation 
+                        ORDER BY code ASC");
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 
 #################################################################################STATISTIQUE###########################################################################
   #Renvoie un tableau contenant l'id de la station et le type de ses prises (séparé par une virgule)

@@ -14,14 +14,14 @@ function sendJsonData($data, $code = 200) {
 $db = dbConnect();
 if (!$db) sendJsonData(['error' => 'Erreur de connexion à la base'], 500);
 
-// Définition UNIQUE du tableau des routes
 $routes = [
     'stats/stations'          => function() use ($db) { return dbCountStations($db); },
     'stats/points-charge'     => function() use ($db) { return dbCountPointsCharge($db); },
     'stats/top-departement'   => function() use ($db) { return dbTopDepartement($db); },
+    'departements' => function() use ($db) { return dbGetAllDepartements($db); },
     
     'visu/prises' => function() use ($db) {
-        $dep   = $_GET['dep'] ?? '';
+        $dep = $_GET['dep'] ?? '';
         $types = isset($_GET['types']) && $_GET['types'] !== '' ? explode(',', $_GET['types']) : [];
         
         $page  = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
@@ -30,6 +30,7 @@ $routes = [
 
         return [
             'data'  => dbGetPrises($db, $dep, $types, $limit, $offset),
+            'total' => dbCountPrises($db, $dep, $types),
             'page'  => $page,
             'limit' => $limit
         ];
@@ -37,11 +38,8 @@ $routes = [
 
     'installation' => function() use ($db) {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ['error' => 'Méthode non autorisée'];
-        
-        // On insère les données reçues via POST
-        $success = dbInsertInstallation($db, $_POST);
-        return $success ? ['success' => true] : ['error' => 'Erreur lors de l\'enregistrement'];
-    },
+        return dbInsertInstallation($db, $_POST) ? ['success' => true] : ['error' => 'Erreur enregistrement'];
+    }
 ];
 
 // Récupération de l'URI
@@ -52,20 +50,19 @@ if (!empty($_SERVER['PATH_INFO'])) {
     $uri = trim($_GET['route'] ?? '', " /");
 }
 
-// Exécution de la route
 if (isset($routes[$uri])) {
     try {
         $result = $routes[$uri]();
         if ($result === false) {
-            sendJsonData(['error' => 'Erreur lors de la récupération des données'], 500);
+            sendJsonData(['error' => 'Erreur serveur'], 500);
         } else {
             sendJsonData($result);
         }
     } catch (PDOException $e) {
-        sendJsonData(['error' => 'Erreur lors de la requête : ' . $e->getMessage()], 500);
+        sendJsonData(['error' => 'Erreur : ' . $e->getMessage()], 500);
     }
 } else {
-    sendJsonData(['error' => 'Ressource non trouvée : ' . $uri], 404);
+    sendJsonData(['error' => 'Ressource non trouvée'], 404);
 }
 
 
