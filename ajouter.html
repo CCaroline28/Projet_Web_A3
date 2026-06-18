@@ -38,6 +38,8 @@
             <option value="Accès libre">Public</option>
             <option value="Accès privé">Privé</option>
           </select>
+            <label>Puissance nominale (kW) *</label>
+            <input type="number" name="puissance_nominale" step="any" required>
         </div>
 
         <div class="col">
@@ -56,6 +58,8 @@
           </select>
           <label>Date mise en service</label>
           <input type="date" name="date_service">
+          <label>Nom de la station *</label>
+          <input type="text" name="nom_station" required>
         </div>
 
         <div class="col">
@@ -72,16 +76,6 @@
             <label><input type="checkbox" name="prise" value="chademo"> Chademo</label>
             <label><input type="checkbox" name="prise" value="ef"> ef</label>
           </div>
-          <div class="col">  <!-- RAJOUTEEEEE. -->
-
-            <label>Nom de la station *</label>
-            <input type="text" name="nom_station" required>
-  
-            <label>Puissance nominale (kW) *</label>
-            <input type="number" name="puissance_nominale" step="any" required>
-  
-          </div>
-
 
           <label>Code postal</label>
           <input type="text" name="code_postal">
