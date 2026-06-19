@@ -1,7 +1,8 @@
 'use strict';
-//Renvoie un tableau de puissance
+
+//-------------------------------------------------------PUISSANCE-----------------------------------------------------
+//Renvoie un tableau de puissance (de type : [{ id_station, puissances }]) -> si plusieurs puissance disponible puissances = " X, Y"
 async function fetchPuissance(dep) {
-  // const dep = document.getElementById('select-dep').value;
   const response = await fetch(
     `php/request.php/statistique/rep_puissance?departement=${dep}`,
     { method: 'GET' }
@@ -16,38 +17,39 @@ async function fetchPuissance(dep) {
   return await response.json();
 }
 
-//Transforme le tableau en quelchose d'exploitable...
+//Transforme le tableau de puissance en quelchose d'exploitable...
 function compterStationsParPuissance(data_puissance) {
   const compteur = {};
 
   data_puissance.forEach(item => {
-    // Séparer les puissances de chaque station (ex: "7.4, 22" → ["7.4", "22"])
+    // Séparer les puissances de chaque station (ex: "7.4, 22" -> ["7.4", "22"])
     const puissances = item.puissances.split(',').map(p => p.trim());
 
+    //sert à calculer combien de fois chaque puissance apparaissent (Exemple de compteur un fois fini : { "22": 8, "7.4": 12, "50": 3 })
     puissances.forEach(p => {
       if (!compteur[p]) compteur[p] = 0;
       compteur[p]++;
     });
   });
 
-  // Trier par valeur de puissance croissante
-  return Object.entries(compteur)
-    .sort((a, b) => parseFloat(a[0]) - parseFloat(b[0]))
-    .map(([puissance, nb]) => ({ puissance, nb }));
+  // renvoie une version plus propre de compter 
+  return Object.entries(compteur) //transforme l'objet en tableau
+    .sort((a, b) => parseFloat(a[0]) - parseFloat(b[0])) //convertit le nombre de puissance en int et les trie par ordre croissant 
+    .map(([puissance, nb]) => ({ puissance, nb })); //ajoute des clés 
+    // exemple format final : [{ puissance: "7.4", nb: 12 },{ puissance: "22", nb: 8 },{ puissance: "50", nb: 3 }]
 }
 
-//sert à créer le barplot
+//sert à créer le barplot pour la puissance
 async function afficherBarplotPuissance(dep) {
-  // ✅ fetchPuissance est appelé ici directement
   const data_puissance = await fetchPuissance(dep);
   const data = compterStationsParPuissance(data_puissance);
 
-  const labels = data.map(item => `${item.puissance} kW`);
-  const valeurs = data.map(item => item.nb);
+  const labels = data.map(item => `${item.puissance} kW`); //crée les étiquettes pour l'axe X du graphique
+  const valeurs = data.map(item => item.nb); //récupère les valeurs pour l'axe Y 
 
-  const ctx = document.getElementById('puissanceChart').getContext('2d');
+  const ctx = document.getElementById('puissanceChart').getContext('2d'); //crée le barplot à cette id
 
-  if (puissanceChart !== null) {
+  if (puissanceChart !== null) { //supprime le barplot si un existe déjà
     puissanceChart.destroy();
   }
 
@@ -83,6 +85,9 @@ async function afficherBarplotPuissance(dep) {
 }
 
 
+//------------------------------------------------------NB de pdc------------------------------------------------------------------------
+
+//Renvoie un tableau de nb de point de charge (de type [{ nb_pdc, total_de_pdc }])
 async function fetchNbpoint(dep) {
   const response = await fetch(
     `php/request.php/statistique/nb_point_charge?departement=${dep}`,
@@ -93,17 +98,18 @@ async function fetchNbpoint(dep) {
   return await response.json();
 }
 
+//sert à afficher le barplot des stations par nb de point de charge
 async function afficherBarplotNbpoint(dep) {
   const data_point = await fetchNbpoint(dep);
 
-  // Les données sont déjà agrégées par l'API, pas besoin de les retraiter
+//convertit les valeurs en int et les trie par ordre croissant
   const data = data_point.sort((a, b) => parseInt(a.nb_pdc) - parseInt(b.nb_pdc));
 
-  const labels = data.map(item => `${item.nb_pdc} pdc`);
-  const valeurs = data.map(item => parseInt(item.total_de_pdc));
+  const labels = data.map(item => `${item.nb_pdc} pdc`); //crée les étiquettes pour l'axe X du graphique
+  const valeurs = data.map(item => parseInt(item.total_de_pdc)); //récupère les valeurs pour l'axe Y 
 
   const ctx = document.getElementById('pointChart').getContext('2d');
-  if (pointChart !== null) {
+  if (pointChart !== null) { //supprime le barplot si un existe déjà
     pointChart.destroy();
   }
   pointChart = new Chart(ctx, {
@@ -137,7 +143,8 @@ async function afficherBarplotNbpoint(dep) {
   });
 }
 
-
+//--------------------------------------------------------------------Type de prise ----------------------------------------------
+//Renvoie un tableau de puissance (de type : [{ id_station, types_de_prise }]) -> si plusieurs type de prise disponible puissances = " X, Y"
 async function fetchTypePrise(dep) {
 
   const response = await fetch(
@@ -152,27 +159,29 @@ function compterTypeStation(data_type) {
   const compteur = {};
 
   data_type.forEach(item => {
-    // Récupérer la chaîne "2, ef" ou "combo_ccs"
+    // Séparer les types de prise de chaque station (ex : "2,ef") ->  ["2","ef"]
     const types = item.types_de_prise.split(',').map(t => t.trim());
 
+    //sert à calculer combien de fois chaque type de prise apparaissent
     types.forEach(type => {
       if (!compteur[type]) compteur[type] = 0;
       compteur[type]++;
     });
   });
 
-  // Retourner un tableau exploitable par Chart.js
-  return Object.entries(compteur)
-    .map(([type, nb]) => ({ type, nb }))
-    .sort((a, b) => a.type.localeCompare(b.type));
+    // renvoie une version plus propre de compter 
+  return Object.entries(compteur) //transforme l'objet en tableau
+    .map(([type, nb]) => ({ type, nb }))//ajoute des clés 
+    .sort((a, b) => a.type.localeCompare(b.type));// trie par ordre alphabétique
 }
 
+//Crée le diagramme camembert
 async function afficherPieType(dep) {
   const data_type = await fetchTypePrise(dep);
   const data = compterTypeStation(data_type);
 
-  const labels = data.map(item => item.type);
-  const valeurs = data.map(item => item.nb);
+  const labels = data.map(item => item.type); //crée les étiquettes pour l'axe X du graphique
+  const valeurs = data.map(item => item.nb);//récupère les valeurs pour l'axe Y 
 
   // Génération automatique d'une couleur différente par part
   const couleurs = labels.map((_, i) => {
@@ -180,9 +189,9 @@ async function afficherPieType(dep) {
     return `hsla(${hue}, 70%, 55%, 0.7)`;
   });
 
-  const ctx = document.getElementById('typeChart').getContext('2d');
+  const ctx = document.getElementById('typeChart').getContext('2d'); //crée le barplot à cette id
 
-  if (typeChart !== null) {
+  if (typeChart !== null) { //supprime le barplot si un existe déjà
     typeChart.destroy();
   }
 
@@ -215,7 +224,7 @@ async function afficherPieType(dep) {
 }
 
 
-
+//Renvoie un tableau d'implantation (de type : [{ implantation_station, total }])
 async function fetchImplantation(dep) {
 
   const response = await fetch(
@@ -227,20 +236,20 @@ async function fetchImplantation(dep) {
   return await response.json();
 }
 
+//affiche le camembert de la répartitino des stations
 async function afficherPieImplantation(dep) {
   const data_implant = await fetchImplantation(dep);
-  console.log(data_implant);
 
-  const data = data_implant.sort(
+  const data = data_implant.sort( //trie les valeurs par ordre croissant
     (a, b) => parseInt(a.implantation_station) - parseInt(b.implantation_station)
   );
 
-  const labels = data.map(item => `${item.implantation_station} pdc`);
-  const valeurs = data.map(item => parseInt(item.total));
+  const labels = data.map(item => `${item.implantation_station} pdc`); //crée les étiquettes pour l'axe X du graphique
+  const valeurs = data.map(item => parseInt(item.total)); //récupère les valeurs pour l'axe Y 
 
-  const ctx = document.getElementById('implantChart').getContext('2d');
+  const ctx = document.getElementById('implantChart').getContext('2d');//crée le barplot à cette id
 
-  if (implantChart !== null) {
+  if (implantChart !== null) {//supprime le camembert si un existe déjà
     implantChart.destroy();
   }
 
@@ -280,18 +289,15 @@ async function afficherPieImplantation(dep) {
 }
 
 
-//// SERT A SELECTIONNER LA Valeur du dep choisi
+//// sert à selectionner du dep choisi
 const select = document.getElementById('dept');
 
-let puissanceChart = null; // pour pouvoir le mettre à jour
+let puissanceChart = null; // pour pouvoir  mettre à jour les diagrammes
 let pointChart = null;
 let typeChart = null;
 let implantChart = null;
 
 
-async function test(dep) {
-  const data = await fetchPuissance(dep);
-  console.log(data)}
 
 //S'il y a un changement dans le menu déroulant, on recharge tout les graphes
 select.addEventListener('change', async () => {
@@ -301,26 +307,17 @@ select.addEventListener('change', async () => {
   await afficherBarplotNbpoint(codeDepartement);
   await afficherPieType(codeDepartement);
   await afficherPieImplantation(codeDepartement);
-  console.log("test");
+  console.log("tes1t");
 
 });
 
-//se charge au lancement de page
+//Pour charger les diagrammes à l'affichage de la page (codeDepartement = "", pour avoir les valeurs de tous les départements)
 document.addEventListener('DOMContentLoaded', async () => {
   const codeDepartement = "";
   await afficherBarplotPuissance(codeDepartement);
   await afficherBarplotNbpoint(codeDepartement);
   await afficherPieType(codeDepartement);
   await afficherPieImplantation(codeDepartement);
-  console.log("Chargement initial terminé");
 });
 
-// document.addEventListener('DOMContentLoaded', async () => {
-//   const valeurInitiale = '%';
-//     await afficherBarplotPuissance(valeurInitiale); // Affichage au chargement ... on a rien a afficher de base...
-// });
-
-
-// document.addEventListener('DOMContentLoaded', async () => {
-  
 
