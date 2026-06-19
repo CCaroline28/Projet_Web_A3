@@ -119,6 +119,7 @@ try {
             SELECT
                 p.id_prise,
                 s.id_station,
+                p.cluster_kmeans,
                 s.nom_station,
                 s.consolidated_latitude AS latitude,
                 s.consolidated_longitude AS longitude,
@@ -135,7 +136,7 @@ try {
         $points = [];
 
         foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-            $row["cluster"] = clusterRapidePourCarte($row["id_prise"]);
+            $row["cluster"] = intval($row["cluster_kmeans"]);
             $points[] = $row;
         }
 
