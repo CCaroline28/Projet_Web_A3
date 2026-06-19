@@ -1,56 +1,149 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LEF IRVE – Bornes de recharge électrique</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css" />
+    <meta charset="UTF-8">
+    <title>LEF IRVE - Prédiction Cluster</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <link rel="stylesheet" href="../css/prediction_cluster.css">
 </head>
+
 <body>
-     <!-- NAVBAR -->
-  <header class="navbar">
-    <div class="navbar__brand">
-      <div class="navbar__logo">
-        <img src="img/logo.png" alt="Logo LEF IRVE" class="navbar__logo-img" />
-      </div>
-      <span class="navbar__name">LEF IRVE</span>
+
+<header class="navbar">
+    <div class="brand">
+        <img src="../img/logo1.png" class="logo-img" alt="Logo LEF IRVE">
+        <h1>LEF IRVE</h1>
     </div>
-    <nav class="navbar__links">
-      <a href="index.html" class="navbar__link">Accueil</a>
-      <a href="visualisation.html" class="navbar__link navbar__link--active">Visualisation</a>
-     <a href="statistique.html" class="navbar__link">Statistique</a>
+
+    <nav>
+        <a href="index.html">🏠 Accueil</a>
+        <a href="visualisation.html">📍 Visualisation</a>
+        <a href="statistique.html">📊 Statistique</a>
+        <a href="visualisation.html">← Retour</a>
     </nav>
-  </header>
-  <main class="cluster-container">
-    <div class="top-section">
-        <div class="input-card">
-            <h3>Caractéristiques du point de charge</h3>
+</header>
+
+<main>
+
+    <section class="title-section">
+        <div class="title-icon">🧩</div>
+        <div>
+            <h2>Prédiction des clusters</h2>
+            <p>Visualisez sur la carte le cluster prédit pour les points de charge.</p>
+        </div>
+    </section>
+
+    <section class="top-layout">
+
+        <aside class="form-card">
+            <h3>📍 Caractéristiques du point</h3>
+
             <label>Longitude</label>
-            <input type="text" placeholder="Zone de texte">
-            
+            <input type="number" step="0.000001" id="longitude" placeholder="-3.3425">
+
             <label>Latitude</label>
-            <input type="text" placeholder="Zone de texte">
-            
-            <button class="validate-btn">Valider</button>
+            <input type="number" step="0.000001" id="latitude" placeholder="48.3904">
+
+            <div class="info-box">
+                Entrez les coordonnées puis cliquez sur Valider pour prédire le cluster.
+            </div>
+
+            <button id="btnPredict">🔍 Valider</button>
+        </aside>
+
+        <section class="map-card">
+            <h3>🗺️ Carte des clusters</h3>
+            <div id="mapCluster"></div>
+        </section>
+
+    </section>
+
+    <section class="result-card">
+
+    <div class="result-top">
+        <div class="result-item">
+            <div class="circle">🗄️</div>
+            <div>
+                <p>Cluster prédit</p>
+                <h3 id="clusterResult">Cluster 2</h3>
+            </div>
         </div>
 
-        <div class="map-card">
-            <h3>Image Carte Cluster</h3>
+        <div class="result-item">
+            <div class="circle blue">🎯</div>
+            <div>
+                <p>Confiance du modèle</p>
+                <h3 id="confidenceResult">82 %</h3>
+                <div class="progress-bar">
+                    <div id="confidenceBar" class="progress-fill" style="width:82%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="result-item">
+            <div class="circle">👥</div>
+            <div>
+                <p>Description du cluster</p>
+                <span id="descriptionResult">
+                    Zone urbaine dense avec forte activité et puissance élevée.
+                </span>
+            </div>
         </div>
     </div>
 
-    <div class="cluster-result">
-        <h2>Cluster X</h2>
+    <div class="result-bottom">
+
+        <div class="mini-card">
+            <div class="circle small">⚡</div>
+            <div>
+                <p>Puissance moyenne</p>
+                <h3 id="puissanceMoyenne">92 kW</h3>
+                <span>dans ce cluster</span>
+            </div>
+        </div>
+
+        <div class="mini-card">
+            <div class="circle small">⛽</div>
+            <div>
+                <p>Nombre de points</p>
+                <h3 id="nombrePoints">1 248</h3>
+                <span>dans ce cluster</span>
+            </div>
+        </div>
+
+        <div class="mini-card">
+            <div class="circle small">🏢</div>
+            <div>
+                <p>Nombre de stations</p>
+                <h3 id="nombreStations">487</h3>
+                <span>dans ce cluster</span>
+            </div>
+        </div>
+
+        <div class="mini-card">
+            <div class="circle small">%</div>
+            <div>
+                <p>Part des points</p>
+                <h3 id="partPoints">18,6 %</h3>
+                <span>du total</span>
+            </div>
+        </div>
+
     </div>
+
+</section>
+
+    </section>
+
 </main>
- <!-- FOOTER -->
-  <footer class="footer">
-    <span class="footer__left">2026 ISEN – Projet Big Data / IA / Web</span>
-    <span class="footer__right">Trinôme 2</span>
-  </footer>
 
+<footer>
+    <p>© 2026 ISEN - Projet Big Data / IA / Web</p>
+    <p>Trinôme 2</p>
+</footer>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="../js/prediction_cluster.js"></script>
 </body>
 </html>
