@@ -662,3 +662,25 @@ function dbGetPointsCarte($db, $dep, $types) {
     $stmt->execute($params);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
+//---------------------------------------------------------------PREDICTION PUISSANCE ------------------------------------------------
+function dbGetPriseInfos(PDO $db, int $idPrise) {
+    $stmt = $db->prepare("
+        SELECT 
+            s.consolidated_latitude, 
+            s.consolidated_longitude, 
+            p.nbre_pdc, 
+            p.puissance_nominale, 
+            p.condition_acces, 
+            dt.type_de_prise, 
+            s.implantation_station
+        FROM prise p
+        JOIN station s ON p.id_station = s.id_station
+        LEFT JOIN de_type dt ON p.id_prise = dt.id_prise
+        WHERE p.id_prise = ?
+        LIMIT 1
+    ");
+
+    $stmt->execute([$idPrise]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
