@@ -22,7 +22,7 @@ $routes = [
     'visu/points' => function() use ($db) {
         $dep = $_GET['dep'] ?? '';
         $types = isset($_GET['types']) && $_GET['types'] !== '' ? explode(',', $_GET['types']) : [];
-        
+
         // Appelez la fonction qui récupère les points de la base de données
         // Assurez-vous que cette fonction existe dans votre fichier database.php
         return dbGetPointsCarte($db, $dep, $types);
@@ -61,52 +61,25 @@ $routes = [
         ];
     },
 
-    #Fonction pour ajouter une prise à la BDD
-   'ajouter' => function() use ($db) {
+    'ajouter' => function() use ($db) {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             return ['success' => false, 'message' => 'Méthode non autorisée'];
         }
 
-        $input = json_decode(file_get_contents('php://input'), true); //lit le JSON envoyé
-        $result = dbAjoutPrise($db, $input);
+        $postData = json_decode(file_get_contents('php://input'), true);
 
-
-        echo json_encode(
-        $result
-            ? ['success' => true,  'message' => 'Prise ajoutée avec succès']
-            : ['success' => false, 'message' => 'Erreur lors de l\'ajout de la prise']
-    );
-    exit; 
+        // Modification ici pour récupérer l'erreur depuis la fonction
+        try {
+            $result = dbAjoutPrise($db, $postData);
+            if ($result === true) {
+                return ['success' => true];
+            } else {
+                return ['error' => $result]; // Renvoie le message d'erreur réel
+            }
+        } catch (Exception $e) {
+            return ['error' => $e->getMessage()];
+        }
     },
-
-#version pour quand ça bug
-// 'ajouter' => function() use ($db) {
-//     $input = json_decode(file_get_contents('php://input'), true);
-//     $result = dbAjoutPrise($db, $input);
-    
-//     ob_clean();
-//     if ($result === true) {
-//         echo json_encode(['success' => true, 'message' => 'Prise ajoutée avec succès']);
-//     } elseif (is_array($result) && isset($result['error'])) {
-//         echo json_encode(['success' => false, 'message' => $result['error']]); // ← message exact
-//     } else {
-//         echo json_encode(['success' => false, 'message' => "Erreur lors de l'ajout"]);
-//     }
-//     exit;
-// },
-
-        
-    // Modification ici pour récupérer l'erreur depuis la fonction
-    // try {
-    //     $result = dbInsertInstallation($db, $postData);
-    //     if ($result === true) {
-    //         return ['success' => true];
-    //     } else {
-    //         return ['error' => $result]; // Renvoie le message d'erreur réel
-    //     }
-    // } catch (Exception $e) {
-    //     return ['error' => $e->getMessage()];
-    // },
 
     // Route pour récupérer une prise (utilisée par modification.js)
     'prise/get' => function() use ($db) {
@@ -137,28 +110,94 @@ $routes = [
             ? ['success' => true,  'message' => 'Point de charge supprimé.']
             : ['success' => false, 'message' => 'Erreur lors de la suppression.'];
     },
+
     // Route pour charger les points pour la carte cluster
-    'predict/all' => function() use ($db) {
+    'prediction/all' => function() use ($db) {
         $points = dbGetAllPrisesForClustering($db);
         foreach ($points as &$row) {
-            $row["cluster"] = calculerCluster($row["longitude"], $row["latitude"]);
+            $row["cluster"] = clusterRapidePourCarte($row["id_prise"]);
         }
         return ["success" => true, "points" => $points];
     },
 
-    // Route pour la prédiction unitaire
-    'predict/point' => function() use ($db) {
+    // Route pour la prédiction unitaire (utilise le vrai modèle Python/KMeans)
+    'prediction/point' => function() use ($db) {
         $longitude = $_GET["longitude"] ?? null;
-        $latitude = $_GET["latitude"] ?? null;
-        if (!$longitude || !$latitude) return ["success" => false, "message" => "Coordonnées manquantes."];
-        
-        $cluster = calculerCluster($longitude, $latitude);
+        $latitude  = $_GET["latitude"]  ?? null;
+
+        if ($longitude === null || $latitude === null || $longitude === '' || $latitude === '') {
+            return ["success" => false, "message" => "Coordonnées manquantes."];
+        }
+
+        try {
+            $cluster   = predireClusterAvecPython($longitude, $latitude);
+            $confiance = calculerConfiance($cluster);
+            $stats     = calculerStatsClusterRapide($db, $cluster);
+
+            return [
+                "success"           => true,
+                "cluster"           => $cluster,
+                "confiance"         => $confiance,
+                "puissance_moyenne" => $stats["puissance_moyenne"],
+                "nombre_points"     => $stats["nombre_points"],
+                "nombre_stations"   => $stats["nombre_stations"],
+                "part_points"       => $stats["part_points"],
+            ];
+        } catch (Exception $e) {
+            return ["success" => false, "message" => $e->getMessage()];
+        }
+    },
+    // Route pour la prédiction unitaire basée sur un ID de prise (compatible avec votre JS)
+'prediction/id' => function() use ($db) {
+    $idPrise = $_GET["id_prise"] ?? null;
+
+    if (!$idPrise) {
+        return ["success" => false, "message" => "ID de prise manquant."];
+    }
+
+    // 1. Récupérer les coordonnées et les infos de la prise en base
+    $stmt = $db->prepare("
+        SELECT s.consolidated_latitude, s.consolidated_longitude, 
+               p.nbre_pdc, p.puissance_nominale, p.condition_acces, 
+               dt.type_de_prise, s.implantation_station
+        FROM prise p
+        JOIN station s ON p.id_station = s.id_station
+        LEFT JOIN de_type dt ON p.id_prise = dt.id_prise
+        WHERE p.id_prise = ? LIMIT 1
+    ");
+    $stmt->execute([$idPrise]);
+    $prise = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$prise) {
+        return ["success" => false, "message" => "Prise introuvable."];
+    }
+
+    // 2. Appeler le modèle Python (ici on utilise les coordonnées récupérées)
+    try {
+        $puissancePredite = predirePuissanceAvecPython(
+            $prise['nbre_pdc'], 
+            $prise['type_de_prise'], 
+            0, // gratuit (à adapter si besoin)
+            $prise['consolidated_latitude'], 
+            $prise['consolidated_longitude'], 
+            $prise['implantation_station']
+        );
+
         return [
             "success" => true,
-            "cluster" => $cluster,
-            "confiance" => calculerConfiance($cluster)
+            "id_prise" => $idPrise,
+            "puissance_reelle" => $prise["puissance_nominale"],
+            "puissance_predite" => $puissancePredite,
+            "type_prise" => $prise["type_de_prise"],
+            "implantation" => $prise["implantation_station"],
+            "latitude" => $prise["consolidated_latitude"],
+            "longitude" => $prise["consolidated_longitude"],
+            "nbre_pdc" => $prise["nbre_pdc"]
         ];
-    },
+    } catch (Exception $e) {
+        return ["success" => false, "message" => $e->getMessage()];
+    }
+},
 ];
 
 // Routage
@@ -179,29 +218,4 @@ if (isset($routes[$uri])) {
     }
 } else {
     sendJsonData(['error' => 'Ressource non trouvée'], 404);
-}
-function calculerCluster($longitude, $latitude) {
-    $longitude = floatval($longitude);
-    $latitude = floatval($latitude);
-
-    if ($latitude > 48.5) {
-        return 2;
-    }
-
-    if ($longitude < 0) {
-        return 1;
-    }
-
-    if ($longitude > 4) {
-        return 3;
-    }
-
-    return 4;
-}
-
-function calculerConfiance($cluster) {
-   if ($cluster == 1) return 78;
-    if ($cluster == 2) return 82;
-    if ($cluster == 3) return 75;
-    return 69;
 }
