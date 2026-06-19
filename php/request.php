@@ -155,29 +155,18 @@ $routes = [
         return ["success" => false, "message" => "ID de prise manquant."];
     }
 
-    // 1. Récupérer les coordonnées et les infos de la prise en base
-    $stmt = $db->prepare("
-        SELECT s.consolidated_latitude, s.consolidated_longitude, 
-               p.nbre_pdc, p.puissance_nominale, p.condition_acces, 
-               dt.type_de_prise, s.implantation_station
-        FROM prise p
-        JOIN station s ON p.id_station = s.id_station
-        LEFT JOIN de_type dt ON p.id_prise = dt.id_prise
-        WHERE p.id_prise = ? LIMIT 1
-    ");
-    $stmt->execute([$idPrise]);
-    $prise = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Récupération des infos de la prise
+    $prise = dbGetPriseInfos($db, $idPrise);
 
     if (!$prise) {
         return ["success" => false, "message" => "Prise introuvable."];
     }
 
-    // 2. Appeler le modèle Python (ici on utilise les coordonnées récupérées)
     try {
         $puissancePredite = predirePuissanceAvecPython(
             $prise['nbre_pdc'], 
             $prise['type_de_prise'], 
-            0, // gratuit (à adapter si besoin)
+            0, 
             $prise['consolidated_latitude'], 
             $prise['consolidated_longitude'], 
             $prise['implantation_station']
@@ -197,8 +186,7 @@ $routes = [
     } catch (Exception $e) {
         return ["success" => false, "message" => $e->getMessage()];
     }
-},
-];
+};
 
 // Routage
 $uri = '';
