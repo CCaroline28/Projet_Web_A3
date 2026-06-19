@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Prédiction d'implantation</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="../css/prediction_implantation.css">
+</head>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="../js/prediction_implantation.js"></script>
+<body>
+
+<header class="topbar">
+    <div class="brand">
+        <img id="logo_irve" src="../images/logo.png" alt="Logo IRVE">
+        <h1>LEF IRVE</h1>
+    </div>
+
+    <nav class="header">
+        <ul>
+            <li><a href="accueil.html">Accueil</a></li>
+            <li><a href="visualisation.html">Visualisation</a></li>
+            <li><a href="statistique.html">Statistique</a></li>
+            <li><a href="visualisation.html">← Retour</a></li>
+        </ul>
+    </nav>
+</header>
+
+<main class="container">
+    <section class="visualisation-section">
+
+        <h2>Analyse prédictive du type d'implantation</h2>
+
+        <div id="loading-message">
+            ⏳ Analyse du point de charge sélectionné par le modèle IA...
+            <br>
+            <span>Veuillez patienter quelques instants.</span>
+        </div>
+
+        <div id="result-content" style="display: none;">
+
+            <div class="coordonnees-rappel">
+                Borne analysée :
+                <strong>
+                    Lat : <span id="lat-val">--</span>
+                    |
+                    Lon : <span id="lon-val">--</span>
+                </strong>
+            </div>
+
+            <div class="bloc-resultat">
+                <div class="result-grid-ia">
+
+                    <div class="result-card">
+                        <span>Données réelles</span>
+                        <p>Implantation enregistrée :</p>
+                        <strong id="reel-implantation">--</strong>
+                    </div>
+
+                    <div class="result-card ia-card">
+                        <span>Prédiction de l'IA</span>
+                        <p>Implantation prédite :</p>
+                        <strong id="pred-implantation">--</strong>
+                        <small id="confiance">--</small>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="infos-borne">
+                <div>
+                    <span>Station</span>
+                    <strong id="nom-station">--</strong>
+                </div>
+
+                <div>
+                    <span>Puissance</span>
+                    <strong id="puissance">--</strong>
+                </div>
+
+                <div>
+                    <span>Nombre de PDC</span>
+                    <strong id="nbre-pdc">--</strong>
+                </div>
+
+                <div>
+                    <span>Payant</span>
+                    <strong id="est-payant">--</strong>
+                </div>
+            </div>
+
+            <h2>Localisation cartographique</h2>
+            <div id="map"></div>
+
+        </div>
+
+        <div class="actions-container">
+            <a href="visualisation.html" class="btn-retour">← Retour au tableau</a>
+        </div>
+
+    </section>
+</main>
+
+<footer>
+    <p>2026 ISEN - Projet Big Data / IA / Web</p>
+    <p>Trinôme 2</p>
+</footer>
+
+
+</body>
+</html>
